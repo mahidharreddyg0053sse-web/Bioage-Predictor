@@ -1,0 +1,42 @@
+# Environment & Secrets (NEVER commit real secrets)
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local SQLite database runtime files & generated PDFs
+backend/data/*.db
+backend/data/*.db-journal
+backend/data/*.db-wal
+backend/data/*.db-shm
+backend/data/reports/*.pdf
+
+# Generated Test Reports & Failure Screenshots (keep directory placeholders)
+reports/*
+!reports/.gitkeep
+screenshots/*
+!screenshots/.gitkeep
+
+# Logs & OS artifacts
+*.log
+.DS_Store
+Thumbs.db

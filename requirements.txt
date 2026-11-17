@@ -1,0 +1,20 @@
+# =============================================================================
+# PhishGuard - Unified Application & CI/CD Automated Testing Dependencies
+# =============================================================================
+-r backend/requirements.txt
+
+# Automated Testing Framework & Reporting
+pytest==8.3.5
+pytest-html==4.1.1
+pytest-metadata==3.1.1
+
+# Selenium Browser Automation
+selenium==4.29.0
+
+# Load & Performance Testing
+locust==2.32.10
+
+# Security Static Analysis (SAST) & Testing Helpers
+bandit[sarif]==1.8.3
+requests==2.32.3
+PyYAML==6.0.2

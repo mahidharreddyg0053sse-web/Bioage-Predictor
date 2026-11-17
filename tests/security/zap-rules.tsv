@@ -1,0 +1,21 @@
+# OWASP ZAP Baseline (Non-Destructive Passive Scan) Rules for PhishGuard
+# Format: <RuleID>	<Action: IGNORE | WARN | FAIL>	(<Rule Description>)
+# High/Critical OWASP Top 10 findings (SQLi, XSS, Debug/App Error Disclosure,
+# Missing X-Frame-Options/X-Content-Type-Options) remain FAIL by default.
+
+100000	IGNORE	(A Client Error response code was returned by the server)
+100001	WARN	(Unexpected Content-Type was returned)
+10010	WARN	(Cookie No HttpOnly Flag - N/A for stateless JSON API)
+10011	WARN	(Cookie Without Secure Flag - local HTTP CI preview)
+10015	IGNORE	(Re-examine Cache-control Directives)
+10016	WARN	(Web Browser XSS Protection Not Enabled - deprecated header)
+10027	WARN	(Information Disclosure - Suspicious Comments)
+10035	WARN	(Strict-Transport-Security Header Not Set - expected on local HTTP CI)
+10038	WARN	(Content Security Policy Header Not Set - SPA inline Vite dev/preview)
+10049	IGNORE	(Storable and Cacheable Content)
+10054	WARN	(Cookie without SameSite Attribute)
+10055	WARN	(CSP scanner notices)
+10096	IGNORE	(Timestamp Disclosure)
+10098	WARN	(Cross-Domain Misconfiguration - explicit CORS for React frontend)
+10109	IGNORE	(Modern Web Application detected)
+90033	WARN	(Loosely Scoped Cookie)

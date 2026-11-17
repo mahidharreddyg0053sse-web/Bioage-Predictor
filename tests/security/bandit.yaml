@@ -1,0 +1,15 @@
+# =============================================================================
+# Bandit SAST Configuration for PhishGuard Python Backend
+# =============================================================================
+exclude_dirs:
+  - tests
+  - backend/tests
+  - frontend
+  - .venv
+  - venv
+  - reports
+  - screenshots
+
+# Only skip B101 (assert_used) if ever encountered outside production app;
+# keep all injection, deserialization, crypto, subprocess, and secret checks active.
+skips: []

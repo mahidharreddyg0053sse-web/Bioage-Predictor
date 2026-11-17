@@ -1,0 +1,184 @@
+name: Load & Performance Tests (Locust)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch:
+    inputs:
+      normal_users:
+        description: "Concurrent users for Normal Traffic profile"
+        required: false
+        default: "15"
+      heavy_users:
+        description: "Concurrent users for Heavy Traffic profile"
+        required: false
+        default: "40"
+      run_time:
+        description: "Duration per traffic profile (e.g., 30s, 1m)"
+        required: false
+        default: "30s"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: load-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  locust-load-testing:
+    name: Locust Normal & Heavy Traffic Load Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      PYTHONUNBUFFERED: "1"
+      LOAD_TARGET_HOST: "http://127.0.0.1:8000"
+      # Elevated rate limit exclusively for load benchmarking so throughput & latency are measured accurately
+      RATE_LIMIT_REQUESTS_PER_MINUTE: "10000"
+      NORMAL_USERS: ${{ github.event.inputs.normal_users || '15' }}
+      HEAVY_USERS: ${{ github.event.inputs.heavy_users || '40' }}
+      LOAD_RUN_TIME: ${{ github.event.inputs.run_time || '30s' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            backend/requirements.txt
+
+      - name: Install Python & Locust dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ensure ML model artifact exists
+        run: |
+          if [ ! -f backend/app/ml/artifacts/phishguard_rf_model.joblib ]; then
+            cd backend && python app/ml/train_model.py
+          fi
+
+      - name: Prepare load report directory
+        run: mkdir -p reports/load
+
+      - name: Start PhishGuard FastAPI server for load benchmarking
+        run: |
+          nohup bash -c 'cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning' \
+            > reports/load/backend.log 2>&1 &
+          echo $! > /tmp/phishguard_load_backend.pid
+
+          for i in $(seq 1 45); do
+            if curl -sf "${LOAD_TARGET_HOST}/api/health" > /dev/null; then
+              echo "PhishGuard API ready for load testing."
+              break
+            fi
+            if [ "$i" -eq 45 ]; then
+              echo "Backend failed to start:"
+              cat reports/load/backend.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Execute Stage 1 — Normal Traffic Load Test
+        id: normal_load
+        run: |
+          locust -f tests/load/locustfile.py PhishGuardNormalUser \
+            --headless \
+            --host "${LOAD_TARGET_HOST}" \
+            --users "${NORMAL_USERS}" \
+            --spawn-rate 5 \
+            --run-time "${LOAD_RUN_TIME}" \
+            --csv=reports/load/normal_traffic \
+            --html=reports/load/normal-traffic-report.html \
+            --only-summary
+
+      - name: Evaluate Stage 1 Performance Thresholds (Normal Traffic)
+        id: normal_thresholds
+        run: |
+          python tests/load/check_thresholds.py \
+            --csv-prefix reports/load/normal_traffic \
+            --profile normal \
+            --users "${NORMAL_USERS}" \
+            --max-avg-ms 500 \
+            --max-p95-ms 1500 \
+            --max-error-rate 1.0 \
+            --min-rps 5.0 \
+            --summary-md reports/load/normal-summary.md \
+            --summary-json reports/load/normal-summary.json
+
+      - name: Execute Stage 2 — Heavy Traffic Stress Test
+        id: heavy_load
+        run: |
+          locust -f tests/load/locustfile.py PhishGuardHeavyUser \
+            --headless \
+            --host "${LOAD_TARGET_HOST}" \
+            --users "${HEAVY_USERS}" \
+            --spawn-rate 10 \
+            --run-time "${LOAD_RUN_TIME}" \
+            --csv=reports/load/heavy_traffic \
+            --html=reports/load/heavy-traffic-report.html \
+            --only-summary
+
+      - name: Evaluate Stage 2 Performance Thresholds (Heavy Traffic)
+        id: heavy_thresholds
+        run: |
+          python tests/load/check_thresholds.py \
+            --csv-prefix reports/load/heavy_traffic \
+            --profile heavy \
+            --users "${HEAVY_USERS}" \
+            --max-avg-ms 1500 \
+            --max-p95-ms 3500 \
+            --max-error-rate 2.0 \
+            --min-rps 10.0 \
+            --summary-md reports/load/heavy-summary.md \
+            --summary-json reports/load/heavy-summary.json
+
+      - name: Stop FastAPI server
+        if: always()
+        run: |
+          if [ -f /tmp/phishguard_load_backend.pid ]; then
+            kill "$(cat /tmp/phishguard_load_backend.pid)" 2>/dev/null || true
+          fi
+
+      - name: Publish Load Testing Summary to GitHub Actions
+        if: always()
+        run: |
+          {
+            echo "# PhishGuard Load & Performance Testing Results"
+            echo ""
+            if [ -f reports/load/normal-summary.md ]; then
+              cat reports/load/normal-summary.md
+            else
+              echo "Normal traffic summary unavailable."
+            fi
+            echo "---"
+            if [ -f reports/load/heavy-summary.md ]; then
+              cat reports/load/heavy-summary.md
+            else
+              echo "Heavy traffic summary unavailable (pipeline may have halted on Stage 1 threshold breach)."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Load Testing Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-reports
+          path: reports/load/
+          retention-days: 14
+          if-no-files-found: warn

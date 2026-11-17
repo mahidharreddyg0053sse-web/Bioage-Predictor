@@ -1,0 +1,389 @@
+name: Vulnerability & Security Testing Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch:
+    inputs:
+      zap_target_url:
+        description: "Optional owned staging URL for non-destructive OWASP ZAP baseline scan (blank = local PhishGuard)"
+        required: false
+        default: ""
+      confirm_target_ownership:
+        description: "Confirm you own or have explicit permission to scan zap_target_url"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: security-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gitleaks-secret-scan:
+    name: Gitleaks Secret & Credential Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout full git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare report directory
+        run: mkdir -p reports/security
+
+      - name: Install Gitleaks CLI
+        run: |
+          GITLEAKS_VERSION="8.24.2"
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Run Gitleaks Secret Detection
+        id: gitleaks
+        run: |
+          set +e
+          gitleaks detect \
+            --source . \
+            --config tests/security/gitleaks.toml \
+            --report-format json \
+            --report-path reports/security/gitleaks-report.json \
+            --redact \
+            --verbose
+          EXIT_CODE=$?
+          gitleaks detect \
+            --source . \
+            --config tests/security/gitleaks.toml \
+            --report-format sarif \
+            --report-path reports/security/gitleaks-report.sarif \
+            --redact \
+            --exit-code 0
+          exit $EXIT_CODE
+
+      - name: Upload Gitleaks Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-gitleaks-reports
+          path: reports/security/gitleaks-report.*
+          retention-days: 14
+          if-no-files-found: warn
+
+  bandit-python-sast:
+    name: Bandit Python SAST Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Bandit
+        run: |
+          python -m pip install --upgrade pip
+          pip install "bandit[sarif]==1.8.3"
+
+      - name: Prepare report directory
+        run: mkdir -p reports/security
+
+      - name: Generate Bandit SAST Reports (HTML, JSON, SARIF)
+        run: |
+          bandit -c tests/security/bandit.yaml -r backend/app -f html -o reports/security/bandit-report.html --exit-zero
+          bandit -c tests/security/bandit.yaml -r backend/app -f json -o reports/security/bandit-report.json --exit-zero
+          bandit -c tests/security/bandit.yaml -r backend/app -f sarif -o reports/security/bandit-report.sarif --exit-zero
+
+      - name: Enforce Bandit High-Severity Security Gate
+        run: |
+          bandit -c tests/security/bandit.yaml -r backend/app -lll -ii
+
+      - name: Upload Bandit Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-bandit-reports
+          path: reports/security/bandit-report.*
+          retention-days: 14
+          if-no-files-found: warn
+
+  trivy-dependency-fs-scan:
+    name: Trivy Dependency & Filesystem Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare report directory
+        run: mkdir -p reports/security
+
+      - name: Run Trivy Scan (Table Report)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          scanners: "vuln,config,secret"
+          format: "table"
+          output: "reports/security/trivy-report.txt"
+          severity: "CRITICAL,HIGH,MEDIUM"
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Run Trivy Scan (JSON Report)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          scanners: "vuln,config,secret"
+          format: "json"
+          output: "reports/security/trivy-report.json"
+          severity: "CRITICAL,HIGH,MEDIUM"
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Run Trivy Scan (SARIF Report)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          scanners: "vuln,config,secret"
+          format: "sarif"
+          output: "reports/security/trivy-results.sarif"
+          severity: "CRITICAL,HIGH"
+          ignore-unfixed: true
+          exit-code: "0"
+
+      - name: Display Trivy Summary
+        run: cat reports/security/trivy-report.txt
+
+      - name: Enforce Trivy Critical Fixable Vulnerability Gate
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          scanners: "vuln,config,secret"
+          severity: "CRITICAL"
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload Trivy Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-trivy-reports
+          path: |
+            reports/security/trivy-report.txt
+            reports/security/trivy-report.json
+            reports/security/trivy-results.sarif
+          retention-days: 14
+          if-no-files-found: warn
+
+  owasp-security-tests:
+    name: OWASP Top 10 Security Control Tests (Pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ensure ML model artifact exists
+        run: |
+          if [ ! -f backend/app/ml/artifacts/phishguard_rf_model.joblib ]; then
+            cd backend && python app/ml/train_model.py
+          fi
+
+      - name: Prepare report directory
+        run: mkdir -p reports/security
+
+      - name: Run Non-Destructive OWASP Security Verification Suite
+        run: |
+          pytest tests/security/test_security_controls.py \
+            --html=reports/security/owasp-security-report.html \
+            --self-contained-html \
+            --junitxml=reports/security/owasp-security-junit.xml
+
+      - name: Upload OWASP Pytest Security Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-owasp-pytest-reports
+          path: |
+            reports/security/owasp-security-report.html
+            reports/security/owasp-security-junit.xml
+          retention-days: 14
+          if-no-files-found: warn
+
+  owasp-zap-dast:
+    name: OWASP ZAP Non-Destructive Baseline Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate safe target ownership policy
+        id: zap_target
+        run: |
+          CUSTOM_URL="${{ github.event.inputs.zap_target_url }}"
+          CONFIRMED="${{ github.event.inputs.confirm_target_ownership }}"
+          if [ -n "$CUSTOM_URL" ]; then
+            if [ "$CONFIRMED" != "true" ]; then
+              echo "ERROR: Refusing to scan external URL without explicit ownership confirmation."
+              exit 1
+            fi
+            echo "url=$CUSTOM_URL" >> "$GITHUB_OUTPUT"
+            echo "local=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=http://127.0.0.1:8000/docs" >> "$GITHUB_OUTPUT"
+            echo "local=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python 3.11
+        if: steps.zap_target.outputs.local == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            backend/requirements.txt
+
+      - name: Install Backend dependencies
+        if: steps.zap_target.outputs.local == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Prepare ZAP report directory
+        run: mkdir -p reports/security/zap
+
+      - name: Start owned local PhishGuard FastAPI application
+        if: steps.zap_target.outputs.local == 'true'
+        env:
+          RATE_LIMIT_REQUESTS_PER_MINUTE: "2000"
+        run: |
+          nohup bash -c 'cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000' \
+            > reports/security/zap/backend.log 2>&1 &
+          echo $! > /tmp/phishguard_zap_backend.pid
+
+          for i in $(seq 1 45); do
+            if curl -sf http://127.0.0.1:8000/api/health > /dev/null; then
+              echo "Local PhishGuard API ready for non-destructive OWASP ZAP baseline scan."
+              break
+            fi
+            if [ "$i" -eq 45 ]; then
+              cat reports/security/zap/backend.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Run OWASP ZAP Baseline Scan (Safe, Non-Destructive)
+        id: zap_scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: "${{ steps.zap_target.outputs.url }}"
+          rules_file_name: "tests/security/zap-rules.tsv"
+          cmd_options: "-a -I"
+          allow_issue_writing: false
+          fail_action: true
+
+      - name: Collect OWASP ZAP reports into reports/security/zap
+        if: always()
+        run: |
+          for f in report_html.html report_md.md report_json.json report_xml.xml; do
+            if [ -f "$f" ]; then
+              cp "$f" "reports/security/zap/zap-$f"
+            fi
+          done
+
+      - name: Stop local FastAPI server
+        if: always()
+        run: |
+          if [ -f /tmp/phishguard_zap_backend.pid ]; then
+            kill "$(cat /tmp/phishguard_zap_backend.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload OWASP ZAP Security Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-owasp-zap-reports
+          path: reports/security/zap/
+          retention-days: 14
+          if-no-files-found: warn
+
+  security-gate-summary:
+    name: Security Pipeline Summary Gate
+    runs-on: ubuntu-latest
+    needs:
+      - gitleaks-secret-scan
+      - bandit-python-sast
+      - trivy-dependency-fs-scan
+      - owasp-security-tests
+      - owasp-zap-dast
+    if: always()
+
+    steps:
+      - name: Publish Consolidated Security Summary
+        run: |
+          {
+            echo "## PhishGuard Security & Vulnerability Testing Summary"
+            echo ""
+            echo "| Security Stage | Tool | Result |"
+            echo "| --- | --- | :---: |"
+            echo "| Secret & Credential Detection | Gitleaks | \`${{ needs.gitleaks-secret-scan.result }}\` |"
+            echo "| Python Static Analysis (SAST) | Bandit | \`${{ needs.bandit-python-sast.result }}\` |"
+            echo "| Dependency & Filesystem CVEs | Trivy | \`${{ needs.trivy-dependency-fs-scan.result }}\` |"
+            echo "| OWASP Top 10 App Controls | Pytest Security Suite | \`${{ needs.owasp-security-tests.result }}\` |"
+            echo "| Web Application DAST (Baseline) | OWASP ZAP | \`${{ needs.owasp-zap-dast.result }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for result in \
+            "${{ needs.gitleaks-secret-scan.result }}" \
+            "${{ needs.bandit-python-sast.result }}" \
+            "${{ needs.trivy-dependency-fs-scan.result }}" \
+            "${{ needs.owasp-security-tests.result }}" \
+            "${{ needs.owasp-zap-dast.result }}"; do
+            if [ "$result" != "success" ]; then
+              echo "Security gate failed: one or more critical security stages did not succeed."
+              exit 1
+            fi
+          done
