@@ -137,6 +137,16 @@ jobs:
             --summary-md reports/load/heavy-summary.md \
             --summary-json reports/load/heavy-summary.json
 
+      - name: Execute Stage 3 — 220 Load, Concurrency & Latency Test Cases (+ Excel Export)
+        id: load_test_suite
+        env:
+          LOAD_EXCEL_REPORT: "reports/load/BioAge_Pro_Load_Test_Results.xlsx"
+        run: |
+          pytest tests/load/test_load_performance.py \
+            --html=reports/load/load-cases-report.html \
+            --self-contained-html \
+            --junitxml=reports/load/load-cases-junit.xml
+
       - name: Stop Express server
         if: always()
         run: |
@@ -161,6 +171,10 @@ jobs:
             else
               echo "Heavy traffic summary unavailable."
             fi
+            echo "---"
+            echo "## Stage 3 — 220 Automated Load & Performance Test Cases"
+            echo "- **Suite Result:** \`${{ steps.load_test_suite.outcome }}\`"
+            echo "- **Excel Workbook:** \`BioAge_Pro_Load_Test_Results.xlsx\` (inside \`load-test-reports\` artifact)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Load Testing Reports
