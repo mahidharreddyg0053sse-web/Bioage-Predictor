@@ -111,20 +111,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare report directory
-        run: mkdir -p reports/security
-
-      - name: Install Trivy CLI
         run: |
-          TRIVY_VERSION="0.58.2"
-          curl -sSfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
-            -o /tmp/trivy.tar.gz
-          tar -xzf /tmp/trivy.tar.gz -C /tmp trivy
-          sudo mv /tmp/trivy /usr/local/bin/trivy
-          trivy --version
+          mkdir -p reports/security
+          chmod -R 777 reports/security
+
+      - name: Pull Trivy Container Image
+        id: trivy_img
+        run: |
+          if docker pull aquasec/trivy:latest; then
+            echo "image=aquasec/trivy:latest" >> "$GITHUB_OUTPUT"
+          elif docker pull public.ecr.aws/aquasecurity/trivy:latest; then
+            echo "image=public.ecr.aws/aquasecurity/trivy:latest" >> "$GITHUB_OUTPUT"
+          else
+            echo "image=ghcr.io/aquasecurity/trivy:latest" >> "$GITHUB_OUTPUT"
+            docker pull ghcr.io/aquasecurity/trivy:latest
+          fi
 
       - name: Run Trivy Filesystem & Dependency Scans (Table, JSON, SARIF)
         run: |
-          trivy fs . \
+          IMG="${{ steps.trivy_img.outputs.image }}"
+          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace "$IMG" fs . \
             --scanners vuln,config,secret \
             --skip-dirs tests \
             --severity CRITICAL,HIGH,MEDIUM \
@@ -133,7 +139,7 @@ jobs:
             --output reports/security/trivy-report.txt \
             --exit-code 0
 
-          trivy fs . \
+          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace "$IMG" fs . \
             --scanners vuln,config,secret \
             --skip-dirs tests \
             --severity CRITICAL,HIGH,MEDIUM \
@@ -142,7 +148,7 @@ jobs:
             --output reports/security/trivy-report.json \
             --exit-code 0
 
-          trivy fs . \
+          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace "$IMG" fs . \
             --scanners vuln,config,secret \
             --skip-dirs tests \
             --severity CRITICAL,HIGH \
@@ -155,7 +161,8 @@ jobs:
 
       - name: Enforce Trivy Critical Fixable Vulnerability Gate
         run: |
-          trivy fs . \
+          IMG="${{ steps.trivy_img.outputs.image }}"
+          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace "$IMG" fs . \
             --scanners vuln,config,secret \
             --skip-dirs tests \
             --severity CRITICAL \
