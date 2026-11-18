@@ -28,7 +28,8 @@ def test_user_dropdown_opens_and_displays_email(driver):
     """Verify clicking user profile button opens dropdown with account email."""
     wait = WebDriverWait(driver, TIMEOUT)
     wait.until(EC.element_to_be_clickable((By.ID, "user-profile-btn"))).click()
-    email_text = driver.find_element(By.ID, "dropdown-user-email").text.strip().lower()
+    email_el = wait.until(EC.visibility_of_element_located((By.ID, "dropdown-user-email")))
+    email_text = (email_el.text or email_el.get_attribute("textContent") or "").strip().lower()
     assert email_text == "alex@workplace.com"
     # Close dropdown
     wait.until(EC.element_to_be_clickable((By.ID, "user-profile-btn"))).click()

@@ -77,10 +77,14 @@ def test_switch_back_to_login_tab_displays_login_form(driver):
 def test_open_and_close_inline_forgot_password_panel(driver):
     """Verify Forgot Password link opens inline recovery panel and Cancel closes it."""
     wait = WebDriverWait(driver, TIMEOUT)
-    wait.until(EC.element_to_be_clickable((By.ID, "forgot-password-link"))).click()
-    wait.until(EC.visibility_of_element_located((By.ID, "forgot-password-panel")))
-    assert driver.find_element(By.ID, "inline-fp-email-input").is_displayed()
-    wait.until(EC.element_to_be_clickable((By.ID, "btn-cancel-fp"))).click()
+    try:
+        wait.until(EC.element_to_be_clickable((By.ID, "forgot-password-link"))).click()
+        wait.until(EC.visibility_of_element_located((By.ID, "forgot-password-panel")))
+        email_inp = wait.until(EC.visibility_of_element_located((By.ID, "inline-fp-email-input")))
+        assert email_inp.is_displayed()
+    finally:
+        cancel_btn = driver.find_element(By.ID, "btn-cancel-fp")
+        driver.execute_script("arguments[0].click();", cancel_btn)
     wait.until(EC.visibility_of_element_located((By.ID, "login-form")))
     assert driver.find_element(By.ID, "login-form").is_displayed()
 

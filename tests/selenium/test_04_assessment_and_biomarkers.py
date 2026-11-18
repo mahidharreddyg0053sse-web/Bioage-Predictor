@@ -83,7 +83,7 @@ def test_wizard_prev_returns_to_previous_step(driver):
 
 def test_wizard_step_pills_rendered(driver):
     """Verify step navigation bar renders multiple clickable step tabs."""
-    pills = driver.find_elements(By.CSS_SELECTOR, "#step-nav-bar button, #step-nav-bar .step-pill")
+    pills = driver.find_elements(By.CSS_SELECTOR, "#step-nav-bar .step-nav-pill")
     assert len(pills) >= 4
 
 

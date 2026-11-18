@@ -146,16 +146,16 @@ def test_profile_otp_box_rejects_non_numeric_input(driver, bad_char):
 
 def test_profile_otp_backspace_moves_focus_backward(driver):
     """Verify Backspace on an empty box clears and moves focus to preceding OTP box."""
-    for idx, d in enumerate("123456", start=1):
+    for idx, d in enumerate("12345", start=1):
         b = driver.find_element(By.ID, f"profile-otp-{idx}")
         driver.execute_script("arguments[0].value = '';", b)
         b.send_keys(d)
 
     box6 = driver.find_element(By.ID, "profile-otp-6")
-    box6.click()
-    box6.send_keys(Keys.BACKSPACE)
+    driver.execute_script("arguments[0].value = ''; arguments[0].focus();", box6)
     box6.send_keys(Keys.BACKSPACE)
     assert driver.find_element(By.ID, "profile-otp-5").get_attribute("value") == ""
+    assert driver.execute_script("return document.activeElement.id;") == "profile-otp-5"
 
 
 def test_profile_otp_arrow_keys_navigate_between_boxes(driver):

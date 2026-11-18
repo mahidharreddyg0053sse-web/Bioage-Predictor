@@ -69,9 +69,9 @@ def test_simulator_reset_restores_baseline(driver):
 
 
 def test_simulator_interactive_controls_rendered(driver):
-    """Verify simulator renders interactive habit levers/selects."""
-    controls = driver.find_elements(By.CSS_SELECTOR, "#simulator-view select, #simulator-view input")
-    assert len(controls) > 0
+    """Verify simulator renders interactive habit levers/pills."""
+    controls = driver.find_elements(By.CSS_SELECTOR, "#simulator-view .lever-pill-btn")
+    assert len(controls) >= 6
 
 
 @pytest.mark.parametrize(
