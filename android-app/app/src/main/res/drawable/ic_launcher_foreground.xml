@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- DNA double helix icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20 C54,20 44,30 44,40 C44,50 64,50 64,60 C64,70 54,80 54,80"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFF"
+        android:fillType="nonZero"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20 C54,20 64,30 64,40 C64,50 44,50 44,60 C44,70 54,80 54,80"
+        android:strokeWidth="3"
+        android:strokeColor="#FFFFFF"
+        android:fillType="nonZero"/>
+    <!-- Cross bars -->
+    <path android:pathData="M46,32 L62,32" android:strokeWidth="2" android:strokeColor="#B2DFDB"/>
+    <path android:pathData="M44,45 L64,45" android:strokeWidth="2" android:strokeColor="#B2DFDB"/>
+    <path android:pathData="M44,55 L64,55" android:strokeWidth="2" android:strokeColor="#B2DFDB"/>
+    <path android:pathData="M46,68 L62,68" android:strokeWidth="2" android:strokeColor="#B2DFDB"/>
+</vector>
+

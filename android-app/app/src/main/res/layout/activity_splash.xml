@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/teal_700"
+    android:gravity="center">
+
+    <!-- Splash Logo Section -->
+    <LinearLayout
+        android:id="@+id/splashLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🧬"
+            android:textSize="72sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BioAge Pro"
+            android:textColor="@android:color/white"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AI Longevity Intelligence"
+            android:textColor="#B2DFDB"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+    <!-- Mode Selector (hidden initially) -->
+    <LinearLayout
+        android:id="@+id/modeSelector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🧬 BioAge Pro"
+            android:textColor="@android:color/white"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose how to run the app"
+            android:textColor="#B2DFDB"
+            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="32dp" />
+
+        <Button
+            android:id="@+id/btnOffline"
+            android:layout_width="280dp"
+            android:layout_height="56dp"
+            android:text="📱  Offline Mode (Bundled)"
+            android:textAllCaps="false"
+            android:textSize="15sp"
+            android:backgroundTint="@android:color/white"
+            android:textColor="@color/teal_700" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Frontend only — no login, OTP, or AI features"
+            android:textColor="#80CBC4"
+            android:textSize="11sp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="20dp" />
+
+        <Button
+            android:id="@+id/btnServer"
+            android:layout_width="280dp"
+            android:layout_height="56dp"
+            android:text="🌐  Connect to Server"
+            android:textAllCaps="false"
+            android:textSize="15sp"
+            android:backgroundTint="#004D40"
+            android:textColor="@android:color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Full features — requires your PC server running"
+            android:textColor="#80CBC4"
+            android:textSize="11sp"
+            android:layout_marginTop="6dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>
+

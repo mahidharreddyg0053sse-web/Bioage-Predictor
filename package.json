@@ -1,0 +1,21 @@
+{
+  "name": "bio-age-predictor",
+  "version": "1.0.0",
+  "description": "Biological Age Predictor & Longevity Simulator",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "server": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "mobile": "open-mobile.bat",
+    "studio": "open-in-android-studio.bat",
+    "build:apk": "build-apk.bat"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "nodemailer": "^10.2.1"
+  }
+}

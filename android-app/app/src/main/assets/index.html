@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BioAge Pro — Biological Age & Longevity Predictor</title>
+  <meta name="description" content="Calculate your biological age, projected life expectancy, and discover clinical lifestyle interventions to reverse aging and live longer.">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-light">
+  <!-- Global Live Image & DNA Ambient Background (All Pages) -->
+  <div class="global-live-bg" aria-hidden="true">
+    <div class="live-bg-image"></div>
+    <div class="live-bg-overlay"></div>
+    <canvas id="global-dna-canvas" class="global-dna-canvas"></canvas>
+  </div>
+
+  <!-- Device Frame Wrapper for Mobile Preview Mode -->
+  <div id="app-wrapper" class="device-desktop">
+    <div class="mobile-frame-chassis">
+      <div class="mobile-speaker-notch"></div>
+
+      <!-- App Header -->
+      <header class="app-header" id="main-header">
+        <div class="header-left">
+          <div class="brand-logo" id="brand-logo-btn">
+            <div class="live-dna-orb">
+              <img src="images/dna-helix.jpg" alt="BioAge Pro Live DNA" class="live-dna-thumb" />
+              <div class="live-dna-glow-ring"></div>
+            </div>
+            <div class="brand-text">
+              <span class="brand-title">BioAge<span class="brand-accent">Pro</span></span>
+              <span class="brand-subtitle">Longevity & Healthspan AI</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs (Desktop & Tablet) -->
+        <nav class="desktop-nav" id="desktop-nav">
+          <button class="nav-btn active" data-view="dashboard-view" id="nav-dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-btn" data-view="assessment-view" id="nav-assessment">
+            <i data-lucide="clipboard-list"></i>
+            <span>Assessment</span>
+          </button>
+          <button class="nav-btn" data-view="simulator-view" id="nav-simulator">
+            <i data-lucide="sliders"></i>
+            <span>Longevity Simulator</span>
+          </button>
+          <button class="nav-btn" data-view="action-plan-view" id="nav-plan">
+            <i data-lucide="sparkles"></i>
+            <span>Action Protocol</span>
+          </button>
+          <button class="nav-btn" data-view="history-view" id="nav-history">
+            <i data-lucide="history"></i>
+            <span>History</span>
+          </button>
+        </nav>
+
+        <!-- Header Actions: Mobile Frame Toggle, Live Bio-Age pill, User Menu -->
+        <div class="header-right">
+          <!-- AI Bot Button -->
+          <button class="biopro-header-btn" id="btn-header-biopro" title="AI Longevity Assistant">
+            <i data-lucide="bot"></i>
+            <span class="ai-live-badge">AI</span>
+          </button>
+
+          <!-- User Profile Dropdown Button -->
+          <div class="user-menu-wrap" id="user-menu-wrap">
+            <button class="user-profile-btn" id="user-profile-btn">
+              <div class="avatar-ring">
+                <i data-lucide="user" class="avatar-icon"></i>
+              </div>
+              <span class="user-name-text" id="user-display-name">Guest</span>
+              <i data-lucide="chevron-down" class="menu-arrow"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="user-dropdown-card" id="user-dropdown-card">
+              <div class="dropdown-header">
+                <strong id="dropdown-user-name">Guest User</strong>
+                <span id="dropdown-user-email">Sign in to track progress</span>
+              </div>
+              <hr class="dropdown-divider">
+              <button class="dropdown-item" id="btn-open-profile">
+                <i data-lucide="user"></i>
+                <span>Profile</span>
+              </button>
+              <button class="dropdown-item" id="btn-retake-assessment">
+                <i data-lucide="refresh-cw"></i>
+                <span>Retake Assessment</span>
+              </button>
+              <button class="dropdown-item" id="btn-export-report">
+                <i data-lucide="file-text"></i>
+                <span>Export Longevity Report</span>
+              </button>
+              <hr class="dropdown-divider">
+              <button class="dropdown-item text-danger" id="btn-auth-action">
+                <i data-lucide="log-out"></i>
+                <span id="auth-btn-text">Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main App Body / Active Views -->
+      <main class="app-main" id="app-main">
+
+        <!-- ========================================== -->
+        <!-- VIEW 1: AUTHENTICATION & LOGIN/REGISTER    -->
+        <!-- ========================================== -->
+        <section class="app-view" id="auth-view" style="display: none;">
+          <div class="auth-container">
+            <div class="auth-hero-banner">
+              <div class="auth-brand-logo">
+                <div class="live-dna-orb">
+                  <img src="images/dna-helix.jpg" alt="BioAge Pro Live DNA" class="live-dna-thumb" />
+                  <div class="live-dna-glow-ring"></div>
+                </div>
+                <div class="brand-title-row">
+                  <span class="brand-title">BioAge<span class="brand-accent">Pro</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Auth Card -->
+            <div class="auth-card">
+              <div class="auth-tab-switch">
+                <button class="auth-tab active" id="tab-login" data-tab="login">Sign In</button>
+                <button class="auth-tab" id="tab-register" data-tab="register">Create Account</button>
+              </div>
+
+              <!-- Login Panel -->
+              <form class="auth-form" id="login-form" autocomplete="off">
+                <div class="form-group">
+                  <label for="login-email">Email Address</label>
+                  <div class="input-with-icon">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="login-email" placeholder="Enter your email" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div class="label-row">
+                    <label for="login-password">Password</label>
+                    <a href="#" class="forgot-link" id="forgot-password-link">Forgot password?</a>
+                  </div>
+                  <div class="input-with-icon">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="login-password" class="has-toggle" placeholder="Enter your password" required autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+                    <button type="button" class="btn-toggle-pass" data-target="login-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                      <i data-lucide="eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-row-checkbox">
+                  <label class="custom-checkbox">
+                    <input type="checkbox" id="login-remember" checked>
+                    <span class="checkbox-mark"></span>
+                    <span>Remember my session</span>
+                  </label>
+                </div>
+
+                <div class="form-error" id="login-error" style="display: none;"></div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-submit-login">
+                  <span>Sign In</span>
+                </button>
+              </form>
+
+              <!-- Register Panel -->
+              <form class="auth-form" id="register-form" autocomplete="off" style="display: none;">
+                <div class="form-group">
+                  <label for="reg-name">Full Name</label>
+                  <div class="input-with-icon">
+                    <i data-lucide="user"></i>
+                    <input type="text" id="reg-name" placeholder="Enter your full name" required autocomplete="off">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-email">Email Address</label>
+                  <div class="input-with-icon">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="reg-email" placeholder="Enter your email" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
+                  </div>
+                </div>
+
+                <div class="form-row-split">
+                  <div class="form-group">
+                    <label for="reg-birthdate">Date of Birth</label>
+                    <input type="date" id="reg-birthdate" required value="1994-06-15">
+                  </div>
+                  <div class="form-group">
+                    <label for="reg-gender">Biological Sex</label>
+                    <select id="reg-gender">
+                      <option value="male">Male</option>
+                      <option value="female" selected>Female</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-password">Password (min 6 characters)</label>
+                  <div class="input-with-icon">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="reg-password" class="has-toggle" placeholder="Create strong password" required minlength="6" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+                    <button type="button" class="btn-toggle-pass" data-target="reg-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                      <i data-lucide="eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-confirm-password">Confirm Password</label>
+                  <div class="input-with-icon">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="reg-confirm-password" class="has-toggle" placeholder="Confirm your password" required minlength="6" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+                    <button type="button" class="btn-toggle-pass" data-target="reg-confirm-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                      <i data-lucide="eye"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-error" id="register-error" style="display: none;"></div>
+
+                <button type="submit" class="btn btn-emerald btn-block btn-lg" id="btn-submit-register">
+                  <span>Create Account</span>
+                </button>
+              </form>
+
+              <!-- Register OTP Verification Panel (Opens in this window before database creation) -->
+              <div class="auth-form" id="register-otp-panel" style="display: none;">
+                <!-- Header with Back Button -->
+                <div class="fp-inline-header">
+                  <button type="button" class="btn-fp-back" id="btn-back-to-register">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Back to Details</span>
+                  </button>
+                  <span class="fp-inline-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald);">Email Verification</span>
+                </div>
+
+                <div class="fp-pane active" style="display: block;">
+                  <h3 class="fp-pane-title" style="font-size: 1.05rem; margin-bottom: 0.25rem;">Verify Your Email</h3>
+                  <p class="fp-pane-desc" style="font-size: 0.8rem; margin-bottom: 0.85rem;">
+                    We've dispatched a 6-digit verification code to <strong id="reg-otp-target-display" style="color: var(--accent-cyan); word-break: break-all;"></strong>.
+                  </p>
+
+                  <div class="fp-alert info" id="reg-alert-otp-preview" style="display: none; padding: 0.6rem 0.75rem; font-size: 0.78rem;">
+                    <i data-lucide="key"></i>
+                    <span>Preview Code: <strong id="reg-preview-code-value" style="font-family: var(--font-mono); font-size: 0.95rem; letter-spacing: 2px;"></strong></span>
+                  </div>
+
+                  <div class="fp-alert error" id="reg-alert-otp-error" style="display: none;">
+                    <i data-lucide="alert-octagon"></i>
+                    <span id="reg-alert-otp-msg">Invalid OTP. Please check the code and try again.</span>
+                  </div>
+
+                  <form id="form-verify-register-otp" autocomplete="off">
+                    <div class="form-group" style="margin-bottom: 0.5rem;">
+                      <label style="text-align: center; display: block;">6-Digit Security Code</label>
+                      <div class="otp-boxes-wrapper" id="reg-otp-inputs-wrapper" style="margin: 0.75rem 0 0.85rem;">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="reg-otp-1" autocomplete="one-time-code" required>
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="reg-otp-2">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="reg-otp-3">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="reg-otp-4">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="reg-otp-5">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="reg-otp-6">
+                      </div>
+                    </div>
+
+                    <!-- 60-Second Timer & Resend Row -->
+                    <div class="fp-timer-resend-row" style="padding: 0.65rem 0.85rem;">
+                      <div class="fp-timer-box">
+                        <i data-lucide="clock"></i>
+                        <span id="reg-fp-timer-status">Resend OTP in <strong class="fp-timer-count" id="reg-fp-timer-seconds">60</strong>s</span>
+                      </div>
+                      <button type="button" class="btn-resend-otp" id="reg-btn-resend-otp" disabled>
+                        <i data-lucide="rotate-cw"></i>
+                        <span>Resend OTP</span>
+                      </button>
+                    </div>
+
+                    <div style="margin-top: 1.1rem;">
+                      <button type="submit" class="btn btn-emerald btn-block btn-lg" id="btn-submit-verify-reg-otp">
+                        <i data-lucide="check-circle-2"></i>
+                        <span>Verify & Create Account</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Forgot Password Panel (Opens in this window only) -->
+              <div class="auth-form" id="forgot-password-panel" style="display: none;">
+                <!-- Header with Back Button -->
+                <div class="fp-inline-header">
+                  <button type="button" class="btn-fp-back" id="btn-cancel-fp">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Back to Sign In</span>
+                  </button>
+                  <span class="fp-inline-badge">Password Recovery</span>
+                </div>
+
+                <!-- Stepper Progress Bar -->
+                <nav class="fp-stepper" aria-label="Reset Progress" style="padding: 0.65rem 0.5rem; margin-bottom: 0.95rem;">
+                  <div class="fp-step-item active" id="inline-step-ind-1">
+                    <span class="fp-step-circle">1</span>
+                    <span>Email</span>
+                  </div>
+                  <div class="fp-step-line" id="inline-step-line-1"></div>
+                  <div class="fp-step-item" id="inline-step-ind-2">
+                    <span class="fp-step-circle">2</span>
+                    <span>OTP Code</span>
+                  </div>
+                  <div class="fp-step-line" id="inline-step-line-2"></div>
+                  <div class="fp-step-item" id="inline-step-ind-3">
+                    <span class="fp-step-circle">3</span>
+                    <span>Password</span>
+                  </div>
+                </nav>
+
+                <!-- STEP 1: Email Form -->
+                <div class="fp-pane active" id="inline-pane-email">
+                  <h3 class="fp-pane-title" style="font-size: 1.05rem; margin-bottom: 0.25rem;">Reset Your Password</h3>
+                  <p class="fp-pane-desc" style="font-size: 0.8rem; margin-bottom: 1rem;">Enter your registered email address to receive a 6-digit One-Time Password (OTP).</p>
+
+                  <div class="fp-alert error" id="inline-alert-email-error" style="display: none;">
+                    <i data-lucide="alert-circle"></i>
+                    <span id="inline-alert-email-msg">Email not found in database.</span>
+                  </div>
+
+                  <form id="inline-form-send-otp" autocomplete="off">
+                    <div class="form-group">
+                      <label for="inline-fp-email-input">Registered Email Address</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="mail"></i>
+                        <input type="email" id="inline-fp-email-input" placeholder="name@domain.com" required autocomplete="email">
+                      </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="inline-btn-send-otp">
+                      <i data-lucide="send"></i>
+                      <span>Send Verification OTP</span>
+                    </button>
+                  </form>
+                </div>
+
+                <!-- STEP 2: OTP Entry + 60s Countdown Timer -->
+                <div class="fp-pane" id="inline-pane-otp">
+                  <h3 class="fp-pane-title" style="font-size: 1.05rem; margin-bottom: 0.25rem;">Enter Verification Code</h3>
+                  <p class="fp-pane-desc" style="font-size: 0.8rem; margin-bottom: 0.85rem;">Enter the 6-digit code sent to <strong id="inline-fp-target-display" style="color: var(--accent-cyan); word-break: break-all;"></strong>.</p>
+
+                  <div class="fp-alert info" id="inline-alert-otp-preview" style="display: none; padding: 0.6rem 0.75rem; font-size: 0.78rem;">
+                    <i data-lucide="key"></i>
+                    <span>Preview Code: <strong id="inline-preview-code-value" style="font-family: var(--font-mono); font-size: 0.95rem; letter-spacing: 2px;"></strong></span>
+                  </div>
+
+                  <div class="fp-alert error" id="inline-alert-otp-error" style="display: none;">
+                    <i data-lucide="alert-octagon"></i>
+                    <span id="inline-alert-otp-msg">Invalid OTP. Please check the code and try again.</span>
+                  </div>
+
+                  <form id="inline-form-verify-otp" autocomplete="off">
+                    <div class="form-group" style="margin-bottom: 0.5rem;">
+                      <label style="text-align: center; display: block;">6-Digit Security Code</label>
+                      <div class="otp-boxes-wrapper" id="inline-otp-inputs-wrapper" style="margin: 0.75rem 0 0.85rem;">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="inline-otp-1" autocomplete="one-time-code" required>
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="inline-otp-2">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="inline-otp-3">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="inline-otp-4">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="inline-otp-5">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="inline-otp-6">
+                      </div>
+                    </div>
+
+                    <!-- 60-Second Timer & Resend Row -->
+                    <div class="fp-timer-resend-row" style="padding: 0.65rem 0.85rem;">
+                      <div class="fp-timer-box">
+                        <i data-lucide="clock"></i>
+                        <span id="inline-fp-timer-status">Resend OTP in <strong class="fp-timer-count" id="inline-fp-timer-seconds">60</strong>s</span>
+                      </div>
+                      <button type="button" class="btn-resend-otp" id="inline-btn-resend-otp" disabled>
+                        <i data-lucide="rotate-cw"></i>
+                        <span>Resend OTP</span>
+                      </button>
+                    </div>
+
+                    <div style="margin-top: 1.1rem;">
+                      <button type="submit" class="btn btn-primary btn-block btn-lg" id="inline-btn-verify-otp">
+                        <i data-lucide="check-circle-2"></i>
+                        <span>Verify & Continue</span>
+                      </button>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 0.75rem;">
+                      <button type="button" class="btn btn-ghost" id="inline-btn-back-to-email" style="font-size: 0.8rem; color: var(--text-muted);">
+                        <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Change email address
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                <!-- STEP 3: Create New Password -->
+                <div class="fp-pane" id="inline-pane-password">
+                  <h3 class="fp-pane-title" style="font-size: 1.05rem; margin-bottom: 0.25rem;">Create New Password</h3>
+                  <p class="fp-pane-desc" style="font-size: 0.8rem; margin-bottom: 1rem;">OTP verified! Enter a new password for your account.</p>
+
+                  <div class="fp-alert error" id="inline-alert-pass-error" style="display: none;">
+                    <i data-lucide="alert-circle"></i>
+                    <span id="inline-alert-pass-msg">Passwords do not match.</span>
+                  </div>
+
+                  <form id="inline-form-reset-password" autocomplete="off">
+                    <div class="form-group">
+                      <label for="inline-fp-new-password">New Password</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="lock"></i>
+                        <input type="password" id="inline-fp-new-password" class="has-toggle" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password">
+                        <button type="button" class="btn-toggle-pass" data-target="inline-fp-new-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                          <i data-lucide="eye"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="inline-fp-confirm-password">Confirm New Password</label>
+                      <div class="input-with-icon">
+                        <i data-lucide="shield-check"></i>
+                        <input type="password" id="inline-fp-confirm-password" class="has-toggle" placeholder="Re-enter your new password" required minlength="6" autocomplete="new-password">
+                        <button type="button" class="btn-toggle-pass" data-target="inline-fp-confirm-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                          <i data-lucide="eye"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="inline-btn-submit-reset">
+                      <i data-lucide="key-round"></i>
+                      <span>Update Password</span>
+                    </button>
+                  </form>
+                </div>
+
+                <!-- STEP 4: Success Confirmation -->
+                <div class="fp-pane" id="inline-pane-success">
+                  <div class="fp-success-wrap">
+                    <div class="fp-success-icon">
+                      <i data-lucide="check"></i>
+                    </div>
+                    <h3 class="fp-pane-title" style="color: var(--accent-emerald);">Password Reset Complete!</h3>
+                    <p class="fp-pane-desc" style="margin-top: 0.35rem; margin-bottom: 1.5rem;">
+                      Your password has been updated in the database. You can now sign in with your new credentials.
+                    </p>
+
+                    <button type="button" class="btn btn-primary btn-block btn-lg" id="inline-btn-finish-signin">
+                      <i data-lucide="log-in"></i>
+                      <span>Sign In with New Password</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+
+
+              <!-- Small Card Blur & Loading Visual -->
+              <div class="auth-card-loader" id="auth-card-loader" style="display: none;">
+                <div class="dna-mini-spinner">
+                  <div class="dna-mini-ring ring-1"></div>
+                  <div class="dna-mini-ring ring-2"></div>
+                  <div class="dna-mini-dot"></div>
+                </div>
+                <span class="auth-loading-text" id="auth-loading-text">Signing in...</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: MULTI-STEP ASSESSMENT WIZARD       -->
+        <!-- ========================================== -->
+        <section class="app-view" id="assessment-view" style="display: none;">
+          <div class="assessment-container">
+            <!-- Wizard Header & Progress -->
+            <div class="wizard-header">
+              <div class="wizard-title-col">
+                <span class="wizard-step-badge" id="wizard-step-badge">Step 1 of 6</span>
+                <h2 class="wizard-section-title" id="wizard-section-title">Biometrics & Vitals</h2>
+                <p class="wizard-section-subtitle" id="wizard-section-subtitle">Physical baseline and cardiovascular vitals</p>
+              </div>
+              <div class="wizard-progress-track">
+                <div class="wizard-progress-fill" id="wizard-progress-fill" style="width: 16.6%;"></div>
+              </div>
+            </div>
+
+            <!-- Step Indicators List -->
+            <div class="step-nav-bar" id="step-nav-bar">
+              <!-- Dynamically populated or rendered -->
+            </div>
+
+            <!-- Wizard Form Card -->
+            <div class="wizard-card">
+              <form id="assessment-form">
+                <div id="assessment-fields-container" class="assessment-fields-grid">
+                  <!-- Dynamically rendered step inputs -->
+                </div>
+
+                <div class="wizard-controls">
+                  <button type="button" class="btn btn-secondary" id="btn-wizard-prev" style="display: none;">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Previous Step</span>
+                  </button>
+
+                  <div class="wizard-controls-right">
+                    <button type="button" class="btn btn-outline" id="btn-load-sample">
+                      <i data-lucide="sparkles"></i>
+                      <span>Autofill Healthy Sample</span>
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-wizard-next">
+                      <span>Next Section</span>
+                      <i data-lucide="arrow-right"></i>
+                    </button>
+                    <button type="button" class="btn btn-emerald" id="btn-wizard-calculate" style="display: none;">
+                      <i data-lucide="calculator"></i>
+                      <span>Compute Biological Age</span>
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 3: LONGEVITY DASHBOARD                -->
+        <!-- ========================================== -->
+        <section class="app-view" id="dashboard-view" style="display: none;">
+          <div class="dashboard-container">
+            
+            <!-- Dashboard Welcome Banner -->
+            <div class="dashboard-banner">
+              <div class="banner-hero-visual">
+                <div class="live-dna-orb dash-banner-orb" title="Live Cellular Analysis">
+                  <img src="images/dna-helix.jpg" alt="BioAge Pro Live DNA" class="live-dna-thumb" />
+                  <div class="live-dna-glow-ring"></div>
+                </div>
+                <div class="banner-text">
+                  <h1 class="dash-greeting" id="dash-greeting">Welcome back, Alex</h1>
+                  <p class="dash-summary-sub">
+                    Your physiological assessment results and longevity forecast are compiled below.
+                  </p>
+                </div>
+              </div>
+              <div class="banner-actions">
+                <button class="btn btn-outline" id="btn-dash-retake">
+                  <i data-lucide="rotate-ccw"></i>
+                  <span>Update Vitals</span>
+                </button>
+                <button class="btn btn-primary" id="btn-dash-simulate">
+                  <i data-lucide="sliders"></i>
+                  <span>Test Habit Changes</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Hero Longevity Projection (Years could you alive) -->
+            
+            <!-- Gemini AI Clinical Longevity Report -->
+            <div class="gemini-ai-card" id="gemini-ai-card" style="display: none;">
+              <div class="gemini-card-header">
+                <div class="gemini-title-wrap">
+                  <div class="gemini-sparkle-icon">
+                    <i data-lucide="sparkles"></i>
+                  </div>
+                  <div>
+                    <h3>Gemini AI Clinical Gerontology Assessment</h3>
+                    <span>Verified by Google Gemini 3.5 Flash Lite Clinical Model</span>
+                  </div>
+                </div>
+                <button class="btn btn-outline-sm" id="btn-re-run-gemini">
+                  <i data-lucide="refresh-cw"></i>
+                  <span>Re-analyze with Gemini</span>
+                </button>
+              </div>
+
+              <!-- AI Clinical Diagnosis Narrative -->
+              <div class="gemini-summary-text" id="gemini-summary-text">
+                <!-- Populated dynamically via Gemini API -->
+              </div>
+
+              <!-- AI Identified Biological Risks -->
+              <div class="gemini-risks-box" id="gemini-risks-box" style="display: none;">
+                <h4><i data-lucide="alert-triangle"></i> Primary Accelerated Aging Hazards Identified:</h4>
+                <ul id="gemini-risks-list"></ul>
+              </div>
+
+              <!-- Interactive Biopro Longevity Consultant Chat -->
+              <div class="gemini-consultant-section">
+                <div class="consultant-header">
+                  <i data-lucide="stethoscope"></i>
+                  <span>Ask Biopro Longevity AI</span>
+                </div>
+                <div class="consultant-chips-row">
+                  <button class="consultant-chip" data-q="How can I lower my biological age by 3 years in 6 months?">How can I drop 3 bio-years?</button>
+                  <button class="consultant-chip" data-q="What is the optimal nutrition protocol to improve my metabolic age?">Diet for my metabolic age</button>
+                  <button class="consultant-chip" data-q="How does my current sleep cycle affect my cellular longevity?">Sleep impact on cellular age</button>
+                </div>
+                <div class="consultant-input-row">
+                  <input type="text" class="consultant-input" id="gemini-consultant-input" placeholder="Ask Biopro any question about your biological age, habits, or labs..." />
+                  <button class="btn btn-primary" id="btn-ask-gemini">
+                    <span>Ask Gemini</span>
+                    <i data-lucide="send"></i>
+                  </button>
+                </div>
+                <div class="consultant-answer-box" id="gemini-consultant-answer"></div>
+              </div>
+            </div>
+            <div id="longevity-hero-container">
+              <!-- Rendered via JS -->
+            </div>
+
+            <!-- Main Telemetry Grid: Bio-Age Speedometer + Spider Radar Chart -->
+            <div class="telemetry-grid">
+              <!-- Left Card: Bio-Age Gauge -->
+              <div class="telemetry-card gauge-card">
+                <div class="card-header">
+                  <div class="card-title-wrap">
+                    <i data-lucide="activity" class="card-icon cyan"></i>
+                    <div>
+                      <h3 class="card-title">Biological Aging Gauge</h3>
+                      <span class="card-caption">Phenotypic cellular age vs calendar age</span>
+                    </div>
+                  </div>
+                  <span class="confidence-badge">94% Confidence</span>
+                </div>
+                <div id="gauge-mount-point">
+                  <!-- Rendered via JS -->
+                </div>
+              </div>
+
+              <!-- Right Card: Longevity Domain Radar Chart -->
+              <div class="telemetry-card radar-card">
+                <div class="card-header">
+                  <div class="card-title-wrap">
+                    <i data-lucide="compass" class="card-icon emerald"></i>
+                    <div>
+                      <h3 class="card-title">Longevity Pillars Spider Chart</h3>
+                      <span class="card-caption">5-Domain balance score (0 - 100)</span>
+                    </div>
+                  </div>
+                  <button class="btn-icon" id="btn-refresh-radar" title="Refresh visualization">
+                    <i data-lucide="refresh-cw"></i>
+                  </button>
+                </div>
+                <div class="radar-canvas-wrap">
+                  <canvas id="longevity-radar-canvas"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Biological Subsystems / Organ Ages -->
+            <div class="subsystems-section">
+              <div class="section-title-row">
+                <div>
+                  <h3 class="section-title">Organ & Biological System Ages</h3>
+                  <p class="section-subtitle">Specific subsystem age breakdown derived from targeted biomarker clusters</p>
+                </div>
+              </div>
+              <div id="organ-cards-container">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+
+            <!-- High Impact Longevity Changes & Actionable Prescription -->
+            <div class="action-prescription-section">
+              <div class="section-title-row">
+                <div>
+                  <h3 class="section-title">High-Leverage Changes to Improve Longevity</h3>
+                  <p class="section-subtitle">Ranked by potential years of life gained and biological age reduction</p>
+                </div>
+                <button class="btn btn-outline" id="btn-view-full-plan">
+                  <span>View Daily Checklist</span>
+                  <i data-lucide="arrow-right"></i>
+                </button>
+              </div>
+              <div id="prescriptions-mount-point">
+                <!-- Rendered via JS -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 4: INTERACTIVE LONGEVITY SIMULATOR    -->
+        <!-- ========================================== -->
+        <section class="app-view" id="simulator-view" style="display: none;">
+          <div class="simulator-container">
+            <div class="sim-header">
+              <div class="sim-title-group">
+                <div class="sim-badge">
+                  <i data-lucide="sparkles"></i>
+                  <span>INTERACTIVE "WHAT-IF" REJUVENATION ENGINE</span>
+                </div>
+                <h2 class="sim-headline">Simulate Your Future Lifespan</h2>
+                <p class="sim-desc">
+                  Adjust your daily habits, sleep duration, and fitness routines. Watch your projected life expectancy 
+                  increase in real time and see how many years you can add to your life!
+                </p>
+              </div>
+              <div class="sim-actions-top">
+                <button class="btn btn-outline" id="btn-sim-reset">
+                  <i data-lucide="rotate-ccw"></i>
+                  <span>Reset to My Baseline</span>
+                </button>
+                <button class="btn btn-emerald" id="btn-sim-optimal">
+                  <i data-lucide="award"></i>
+                  <span>Simulate 100% Optimal Habits</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Comparison Floating Header -->
+            <div class="sim-results-banner" id="sim-results-banner">
+              <div class="sim-res-box">
+                <span class="sim-res-label">ORIGINAL BIO-AGE</span>
+                <span class="sim-res-num" id="sim-orig-bio">--</span>
+              </div>
+              <div class="sim-arrow">
+                <i data-lucide="arrow-right"></i>
+              </div>
+              <div class="sim-res-box highlight">
+                <span class="sim-res-label">SIMULATED BIO-AGE</span>
+                <span class="sim-res-num emerald" id="sim-new-bio">--</span>
+                <span class="sim-res-delta" id="sim-bio-delta">0.0 yrs</span>
+              </div>
+              <div class="sim-divider-vertical"></div>
+              <div class="sim-res-box">
+                <span class="sim-res-label">ORIGINAL LIFESPAN</span>
+                <span class="sim-res-num" id="sim-orig-life">--</span>
+              </div>
+              <div class="sim-arrow">
+                <i data-lucide="arrow-right"></i>
+              </div>
+              <div class="sim-res-box highlight">
+                <span class="sim-res-label">PROJECTED LIFESPAN</span>
+                <span class="sim-res-num cyan" id="sim-new-life">--</span>
+                <span class="sim-res-gain" id="sim-life-gain">+0.0 Extra Years</span>
+              </div>
+            </div>
+
+            <!-- Interactive Habit Levers Grid -->
+            <div class="sim-levers-grid">
+
+              <!-- Lever 1: Mediterranean Diet -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="salad"></i></div>
+                  <div>
+                    <h4>Diet Quality & Whole Foods</h4>
+                    <span>Daily greens, extra virgin olive oil, polyphenols</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="mediterraneanScore">
+                    <button class="lever-pill-btn" data-val="low">Standard / Fast Food</button>
+                    <button class="lever-pill-btn" data-val="moderate">Moderate Whole Foods</button>
+                    <button class="lever-pill-btn" data-val="high">Strict Mediterranean</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lever 2: Ultra Processed Foods -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="package-x"></i></div>
+                  <div>
+                    <h4>Ultra-Processed Foods & Packaged Snacks</h4>
+                    <span>Industrial food additives, soda, emulsifiers</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="ultraProcessedFood">
+                    <button class="lever-pill-btn" data-val="frequent">Daily / High</button>
+                    <button class="lever-pill-btn" data-val="moderate">1-3x per Week</button>
+                    <button class="lever-pill-btn" data-val="rare">Rare / Zero Packaged</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lever 3: Sleep Duration -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="moon"></i></div>
+                  <div>
+                    <h4>Nightly Sleep Duration</h4>
+                    <span>Optimal circadian glymphatic repair</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="sleepDuration">
+                    <button class="lever-pill-btn" data-val="severe_deficit">&lt; 6 Hours</button>
+                    <button class="lever-pill-btn" data-val="mild_deficit">6 - 7 Hours</button>
+                    <button class="lever-pill-btn" data-val="optimal">7.5 - 8.5 Hours</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lever 4: Zone 2 Cardio -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="heart-pulse"></i></div>
+                  <div>
+                    <h4>Zone 2 Aerobic Cardio (VO2 Max)</h4>
+                    <span>Brisk walking, jogging, cycling, rowing</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="cardioMinutes">
+                    <button class="lever-pill-btn" data-val="sedentary">Sedentary (&lt;30m)</button>
+                    <button class="lever-pill-btn" data-val="low">30 - 90 min/wk</button>
+                    <button class="lever-pill-btn" data-val="moderate">90 - 180 min/wk</button>
+                    <button class="lever-pill-btn" data-val="high">180+ min/wk</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lever 5: Resistance / Strength Training -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="dumbbell"></i></div>
+                  <div>
+                    <h4>Strength & Muscle Sarcopenia Prevention</h4>
+                    <span>Resistance weights, calisthenics, kettlebells</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="strengthDays">
+                    <button class="lever-pill-btn" data-val="none">No Strength Work</button>
+                    <button class="lever-pill-btn" data-val="moderate">1 - 2 Days/wk</button>
+                    <button class="lever-pill-btn" data-val="optimal">3 - 4 Days/wk</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lever 6: Smoking Cessation -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="shield-alert"></i></div>
+                  <div>
+                    <h4>Smoking & Nicotine</h4>
+                    <span>Endothelial vascular damage and DNA methylation</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="smokingStatus">
+                    <button class="lever-pill-btn" data-val="active">Active Smoker</button>
+                    <button class="lever-pill-btn" data-val="light">Occasional / Vape</button>
+                    <button class="lever-pill-btn" data-val="never">100% Smoke-Free</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lever 7: Alcohol Intake -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="wine"></i></div>
+                  <div>
+                    <h4>Alcohol Consumption</h4>
+                    <span>Acetaldehyde toxicity and sleep fragmentation</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="alcoholIntake">
+                    <button class="lever-pill-btn" data-val="heavy">Heavy (&gt;8 drinks)</button>
+                    <button class="lever-pill-btn" data-val="moderate">Moderate (4-7 drinks)</button>
+                    <button class="lever-pill-btn" data-val="none">Abstinent / Zero</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lever 8: Stress & Nervous System -->
+              <div class="sim-lever-card">
+                <div class="lever-header">
+                  <div class="lever-icon-wrap"><i data-lucide="smile"></i></div>
+                  <div>
+                    <h4>Chronic Stress & Vagal Tone</h4>
+                    <span>Cortisol balance, breathwork, mindfulness</span>
+                  </div>
+                </div>
+                <div class="lever-control">
+                  <div class="lever-options-row" data-param="stressLevel">
+                    <button class="lever-pill-btn" data-val="severe">Severe Overwhelm</button>
+                    <button class="lever-pill-btn" data-val="moderate">Moderate Stress</button>
+                    <button class="lever-pill-btn" data-val="low">Low / Zen Balance</button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Adopt Simulator Routine Button -->
+            <div class="sim-footer-cta">
+              <button class="btn btn-emerald btn-lg" id="btn-apply-simulation">
+                <i data-lucide="check-circle-2"></i>
+                <span>Save Simulated Changes to My Longevity Protocol</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 5: ACTION PROTOCOL & DAILY CHECKLIST  -->
+        <!-- ========================================== -->
+        <section class="app-view" id="action-plan-view" style="display: none;">
+          <div class="plan-container">
+            <div class="plan-hero-banner">
+              <div>
+                <span class="plan-badge"><i data-lucide="calendar-check"></i> PERSONALIZED LONGEVITY BLUEPRINT</span>
+                <h2 class="plan-headline">Your Daily Longevity Routine</h2>
+                <p class="plan-sub">
+                  Consistency compounds. Check off these evidence-backed habits daily to slow your biological aging clock.
+                </p>
+              </div>
+              <div class="streak-widget">
+                <div class="streak-flame"><i data-lucide="flame"></i></div>
+                <div class="streak-text">
+                  <span class="streak-count" id="streak-count">4</span>
+                  <span class="streak-label">Day Longevity Streak</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Daily Checklist -->
+            <div class="daily-checklist-card">
+              <div class="checklist-header">
+                <h3>Today's Habit Checklist</h3>
+                <span class="adherence-pill" id="adherence-pill">3 of 7 Completed</span>
+              </div>
+              <div class="checklist-items" id="daily-checklist-items">
+                <!-- Dynamically populated or rendered -->
+              </div>
+            </div>
+
+            <!-- Comprehensive Longevity Strategy Breakdown -->
+            <div class="strategy-pillars-grid">
+              <div class="strategy-card">
+                <div class="strat-header">
+                  <i data-lucide="utensils" class="strat-icon"></i>
+                  <h4>Nutrition Protocol</h4>
+                </div>
+                <ul>
+                  <li><strong>30g Fiber Minimum:</strong> High-polyphenol vegetables, chia seeds, and legumes.</li>
+                  <li><strong>Zero Liquid Sugar:</strong> Eliminate sodas, syrups, and sweetened fruit juices.</li>
+                  <li><strong>Autophagy Window:</strong> 13+ hour overnight fast (e.g. 7:30 PM to 8:30 AM).</li>
+                </ul>
+              </div>
+
+              <div class="strategy-card">
+                <div class="strat-header">
+                  <i data-lucide="moon" class="strat-icon"></i>
+                  <h4>Sleep & Circadian Rhythm</h4>
+                </div>
+                <ul>
+                  <li><strong>Anchor Wake Time:</strong> Wake within 30 minutes every day of the week.</li>
+                  <li><strong>Morning Lux:</strong> 10 minutes of direct outdoor sunlight upon waking.</li>
+                  <li><strong>Cool Room:</strong> Maintain 65°F (18°C) bedroom temperature with blackout curtains.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-card">
+                <div class="strat-header">
+                  <i data-lucide="zap" class="strat-icon"></i>
+                  <h4>Exercise & Movement</h4>
+                </div>
+                <ul>
+                  <li><strong>Zone 2 Cardio:</strong> 150-180 min weekly conversational pace endurance.</li>
+                  <li><strong>Heavy Resistance:</strong> 3x weekly compound lifts to combat sarcopenia.</li>
+                  <li><strong>Post-Prandial Walks:</strong> 10-minute stroll after lunch and dinner.</li>
+                </ul>
+              </div>
+
+              <div class="strategy-card">
+                <div class="strat-header">
+                  <i data-lucide="heart" class="strat-icon"></i>
+                  <h4>Stress & Vagal Resilience</h4>
+                </div>
+                <ul>
+                  <li><strong>Physiological Sigh:</strong> Two quick inhales through nose, long slow exhale.</li>
+                  <li><strong>Social Bonding:</strong> At least 1 meaningful face-to-face deep conversation weekly.</li>
+                  <li><strong>Sauna / Heat Shock:</strong> 20 min sauna 2-3x weekly for HSP90 activation.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Export Full Clinical PDF/Report -->
+            <div class="plan-export-row">
+              <button class="btn btn-outline btn-lg" id="btn-print-report">
+                <i data-lucide="printer"></i>
+                <span>Print Official Longevity Health Summary</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- VIEW 6: ASSESSMENT HISTORY & TRACKING      -->
+        <!-- ========================================== -->
+        <section class="app-view" id="history-view" style="display: none;">
+          <div class="history-container">
+            <div class="history-header">
+              <div>
+                <h2>Your Biological Age Tracking History</h2>
+                <p>Track your biological rejuvenation trajectory across your previous evaluations.</p>
+              </div>
+              <button class="btn btn-primary" id="btn-history-retake">
+                <i data-lucide="plus-circle"></i>
+                <span>New Evaluation</span>
+              </button>
+            </div>
+
+            <!-- History List Table -->
+            <div class="history-card">
+              <div class="table-responsive">
+                <table class="history-table" id="history-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Calendar Age</th>
+                      <th>Biological Age</th>
+                      <th>Age Delta</th>
+                      <th>Projected Lifespan</th>
+                      <th>Pace of Aging</th>
+                    </tr>
+                  </thead>
+                  <tbody id="history-table-body">
+                    <!-- Populated via JS -->
+                  </tbody>
+                </table>
+              </div>
+              <div id="history-empty" class="history-empty" style="display: none;">
+                <i data-lucide="calendar"></i>
+                <p>No previous assessments recorded yet. Complete an assessment to begin tracking!</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Mobile Native Bottom Navigation Bar (Shown on small screens) -->
+      <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+        <button class="m-nav-item active" data-view="dashboard-view" id="m-nav-dash">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="m-nav-item" data-view="assessment-view" id="m-nav-assess">
+          <i data-lucide="clipboard-list"></i>
+          <span>Assess</span>
+        </button>
+        <button class="m-nav-item" data-view="simulator-view" id="m-nav-sim">
+          <i data-lucide="sliders"></i>
+          <span>Simulate</span>
+        </button>
+        <button class="m-nav-item" data-view="action-plan-view" id="m-nav-plan">
+          <i data-lucide="sparkles"></i>
+          <span>Protocol</span>
+        </button>
+        <button class="m-nav-item" data-view="history-view" id="m-nav-hist">
+          <i data-lucide="history"></i>
+          <span>History</span>
+        </button>
+      </nav>
+
+    </div><!-- /.mobile-frame-chassis -->
+  </div><!-- /#app-wrapper -->
+
+  <!-- Printable Longevity Report Modal -->
+  <div class="modal-overlay" id="report-modal" style="display: none;">
+    <div class="modal-content print-modal">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="dna"></i>
+          <span>BioAge Pro — Clinical Longevity Summary</span>
+        </div>
+        <button class="modal-close-btn" id="btn-close-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body print-area" id="print-area">
+        <!-- Rendered Report Content -->
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-report">Close</button>
+        <button class="btn btn-emerald" id="btn-execute-print">
+          <i data-lucide="printer"></i>
+          <span>Print / Save as PDF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profile Management Modal (Popup) -->
+  <div class="modal-overlay" id="user-profile-modal" style="display: none;">
+    <form id="form-user-profile" class="modal-content" style="max-width: 480px; max-height: 90vh;" autocomplete="off">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="user"></i>
+          <span>Account Profile</span>
+        </div>
+        <button class="modal-close-btn" id="btn-close-profile-modal" type="button">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.25rem 1.4rem;">
+        <!-- Panel 1: Profile Details & Password Change -->
+        <div id="profile-main-panel">
+          <!-- User Info Banner with Avatar -->
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.35rem; padding: 0.9rem 1.1rem; background: #f8fafc; border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #059669, #0284c7); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 800; font-size: 1.25rem; flex-shrink: 0;" id="profile-avatar-letters">
+              U
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <h4 id="profile-card-name" style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</h4>
+              <p id="profile-card-email" style="font-size: 0.82rem; color: #64748b; margin: 0.2rem 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">user@example.com</p>
+            </div>
+          </div>
+
+          <!-- Name Input -->
+          <div class="form-group" style="margin-bottom: 1.1rem;">
+            <label for="profile-name">Full Name</label>
+            <div class="input-with-icon">
+              <i data-lucide="user"></i>
+              <input type="text" id="profile-name" required placeholder="Enter your full name" />
+            </div>
+          </div>
+
+          <!-- Email Input (Disabled / Unchangeable) -->
+          <div class="form-group" style="margin-bottom: 1.1rem;">
+            <div class="label-row">
+              <label for="profile-email">Email Address</label>
+              <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">(Cannot be changed)</span>
+            </div>
+            <div class="input-with-icon">
+              <i data-lucide="mail"></i>
+              <input type="email" id="profile-email" disabled style="background: #f1f5f9; color: #64748b; cursor: not-allowed; border-color: #e2e8f0;" />
+            </div>
+            <span class="form-hint" style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem;">Account email is permanent and cannot be modified.</span>
+          </div>
+
+          <!-- Date of Birth Input -->
+          <div class="form-group" style="margin-bottom: 1.1rem;">
+            <label for="profile-birthdate">Date of Birth</label>
+            <div class="input-with-icon">
+              <i data-lucide="calendar"></i>
+              <input type="date" id="profile-birthdate" required />
+            </div>
+            <span class="form-hint" style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">Used to accurately calibrate biological aging projections.</span>
+          </div>
+
+          <!-- Password Change Card Section -->
+          <div class="profile-password-card">
+            <!-- Hidden dummy inputs to prevent browser credential managers from autofilling into password change fields -->
+            <input type="text" name="prevent_autofill_username" style="display:none !important;" aria-hidden="true" tabindex="-1" autocomplete="off" />
+            <input type="password" name="prevent_autofill_password" style="display:none !important;" aria-hidden="true" tabindex="-1" autocomplete="off" />
+
+            <div class="profile-section-title">
+              <i data-lucide="key-round"></i>
+              <span>Change Password</span>
+            </div>
+            <span class="profile-section-sub">(Leave blank to keep your current password)</span>
+
+            <!-- Current / Old Password Input -->
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label for="profile-old-password">Current Password</label>
+              <div class="input-with-icon">
+                <i data-lucide="lock"></i>
+                <input type="password" id="profile-old-password" class="has-toggle" placeholder="Enter current password" autocomplete="new-password" data-lpignore="true" data-form-type="other" readonly onfocus="this.removeAttribute('readonly');" onmousedown="this.removeAttribute('readonly');" onblur="if(!this.value) this.setAttribute('readonly', 'readonly');" />
+                <button type="button" class="btn-toggle-pass" data-target="profile-old-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- New Password Input -->
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label for="profile-new-password">New Password</label>
+              <div class="input-with-icon">
+                <i data-lucide="key"></i>
+                <input type="password" id="profile-new-password" class="has-toggle" placeholder="Enter new password (min. 6 characters)" minlength="6" autocomplete="new-password" data-lpignore="true" data-form-type="other" />
+                <button type="button" class="btn-toggle-pass" data-target="profile-new-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Confirm New Password Input -->
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label for="profile-confirm-password">Confirm New Password</label>
+              <div class="input-with-icon">
+                <i data-lucide="shield-check"></i>
+                <input type="password" id="profile-confirm-password" class="has-toggle" placeholder="Re-enter new password" minlength="6" autocomplete="new-password" data-lpignore="true" data-form-type="other" />
+                <button type="button" class="btn-toggle-pass" data-target="profile-confirm-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Forgot Password Option at bottom of card -->
+            <div class="profile-forgot-bottom-wrap">
+              <button type="button" class="forgot-pwd-bottom-btn" id="btn-profile-forgot-pwd">
+                <i data-lucide="key-round"></i>
+                <span>Forgot your current password?</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Feedback messages -->
+          <div id="profile-modal-error" style="display: none; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; font-size: 0.85rem; margin-top: 0.75rem;"></div>
+          <div id="profile-modal-success" style="display: none; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 0.85rem; margin-top: 0.75rem;"></div>
+        </div>
+
+        <!-- Panel 2: In-Modal Forgot Password & OTP Reset Panel -->
+        <div id="profile-otp-panel" style="display: none;">
+          <div class="profile-otp-header-bar">
+            <div class="profile-otp-title-group">
+              <div class="profile-otp-badge-icon">
+                <i data-lucide="shield-check"></i>
+              </div>
+              <div>
+                <h4 class="profile-otp-modal-title">Password Recovery via OTP</h4>
+                <p class="profile-otp-modal-subtitle">Enter the 6-digit verification code sent to your email</p>
+              </div>
+            </div>
+            <button type="button" class="profile-otp-btn-back" id="btn-profile-otp-back" title="Back to Profile">
+              <i data-lucide="arrow-left"></i>
+              <span>Back</span>
+            </button>
+          </div>
+
+          <!-- Target Email Pill Banner -->
+          <div class="profile-otp-pill-banner">
+            <i data-lucide="mail"></i>
+            <span>Verification code sent to: <strong id="profile-otp-target-email">user@example.com</strong></span>
+          </div>
+
+          <!-- 6-Digit OTP Input -->
+          <div class="profile-form-group">
+            <div class="profile-otp-label-bar">
+              <label>6-Digit Verification Code</label>
+              <button type="button" class="btn-resend" id="btn-profile-resend-otp" disabled>
+                <span>Resend OTP in </span><span id="profile-resend-seconds">60</span>s
+              </button>
+            </div>
+            <div class="otp-boxes-wrapper profile-otp-boxes-wrapper" id="profile-otp-inputs-wrapper">
+              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input profile-otp-digit" id="profile-otp-1" autocomplete="one-time-code" required />
+              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input profile-otp-digit" id="profile-otp-2" />
+              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input profile-otp-digit" id="profile-otp-3" />
+              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input profile-otp-digit" id="profile-otp-4" />
+              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input profile-otp-digit" id="profile-otp-5" />
+              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input profile-otp-digit" id="profile-otp-6" />
+            </div>
+            <input type="hidden" id="profile-otp-code" value="" />
+          </div>
+
+          <!-- New Password Input -->
+          <div class="profile-form-group">
+            <label for="profile-otp-new-password">New Password</label>
+            <div class="input-with-icon">
+              <i data-lucide="lock"></i>
+              <input type="password" id="profile-otp-new-password" class="has-toggle" placeholder="Enter new password (min. 6 characters)" minlength="6" autocomplete="new-password" />
+              <button type="button" class="btn-toggle-pass" data-target="profile-otp-new-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirm New Password Input -->
+          <div class="profile-form-group">
+            <label for="profile-otp-confirm-password">Confirm New Password</label>
+            <div class="input-with-icon">
+              <i data-lucide="shield-check"></i>
+              <input type="password" id="profile-otp-confirm-password" class="has-toggle" placeholder="Confirm new password" minlength="6" autocomplete="new-password" />
+              <button type="button" class="btn-toggle-pass" data-target="profile-otp-confirm-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- OTP Error / Success messages -->
+          <div id="profile-otp-error" class="profile-otp-status-msg error" style="display: none;"></div>
+          <div id="profile-otp-success" class="profile-otp-status-msg success" style="display: none;"></div>
+        </div>
+      </div>
+
+      <!-- Footers for Main and OTP views -->
+      <div class="modal-footer" id="profile-main-footer">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-profile">Cancel</button>
+        <button type="submit" class="btn btn-emerald" id="btn-save-profile">
+          <i data-lucide="check"></i>
+          <span>Save Changes</span>
+        </button>
+      </div>
+
+      <div class="modal-footer" id="profile-otp-footer" style="display: none;">
+        <button type="button" class="btn btn-secondary" id="btn-cancel-profile-otp">Cancel</button>
+        <button type="button" class="btn btn-emerald" id="btn-submit-profile-otp">
+          <i data-lucide="check-circle-2"></i>
+          <span>Verify OTP & Update Password</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Gemini API Key Settings Modal -->
+  <div class="modal-overlay" id="gemini-key-modal" style="display: none;">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="sparkles"></i>
+          <span>Gemini AI Configuration</span>
+        </div>
+        <button class="modal-close-btn" id="btn-close-key-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: #334155; margin-bottom: 1rem;">
+          Your Gemini API Key is configured to provide medical-grade biological age calculations, life expectancy projections, and clinical recommendations.
+        </p>
+        <div class="form-group">
+          <label for="input-gemini-key">Gemini API Key</label>
+          <input type="password" id="input-gemini-key" value="" placeholder="Paste your Gemini API key" />
+          <span class="form-hint">Model: <strong>gemini-3.5-flash-lite</strong> (Active &amp; Verified)</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel-key">Close</button>
+        <button class="btn btn-emerald" id="btn-save-key">
+          <i data-lucide="check"></i>
+          <span>Save API Key</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Biopro AI Bot Interactive Modal Drawer -->
+  <div class="modal-overlay" id="biopro-bot-modal" style="display: none;">
+    <div class="modal-content biopro-modal-card">
+      <div class="biopro-modal-header">
+        <div class="biopro-bot-brand">
+          <div class="biopro-avatar-bot">
+            <i data-lucide="bot"></i>
+          </div>
+          <div class="biopro-title-text">
+            <h3>AI Longevity Assistant</h3>
+            <span>Clinical Longevity Intelligence</span>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-biopro-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Chat History Stream -->
+      <div class="biopro-chat-body" id="biopro-chat-stream">
+        <div class="chat-bubble bot">
+          <strong>AI Assistant</strong>
+          Hello! I am your personalized AI Longevity Geroscientist. 
+          I have analyzed your lifestyle telemetry, sleep cycles, and cardiovascular vitals. 
+          Ask me anything about your biological age, what foods will optimize your cellular age, or how to add years to your life!
+        </div>
+      </div>
+
+      <!-- Footer & Input -->
+      <div class="biopro-modal-footer">
+        <div class="biopro-chips-scroll">
+          <button class="biopro-quick-chip" data-q="How can I lower my biological age by 3 years in 6 months?">Drop 3 bio-years in 6 months</button>
+          <button class="biopro-quick-chip" data-q="What is the optimal diet to lower my metabolic age?">Diet for metabolic age</button>
+          <button class="biopro-quick-chip" data-q="How does my current sleep cycle affect my cellular longevity?">Sleep impact on cellular aging</button>
+          <button class="biopro-quick-chip" data-q="Give me 3 high-impact habits to extend my lifespan by 5 years.">3 habits for +5 years</button>
+        </div>
+        <div class="consultant-input-row">
+          <input type="text" class="consultant-input" id="biopro-modal-input" placeholder="Ask any question about your biological age, vitals, or habits..." />
+          <button class="btn btn-emerald" id="btn-send-biopro-modal">
+            <span>Send</span>
+            <i data-lucide="send"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  <!-- ========================================== -->
+  <!-- FORGOT PASSWORD & OTP MODAL WINDOW         -->
+  <!-- ========================================== -->
+  <div class="fp-modal-overlay" id="fp-modal-overlay" aria-hidden="true">
+    <div class="fp-modal-card">
+      <button type="button" class="fp-modal-close" id="btn-close-fp-modal" title="Close Window" aria-label="Close">
+        <i data-lucide="x"></i>
+      </button>
+
+      <!-- Window Header -->
+      <header class="fp-header">
+        <div class="fp-brand">
+          <div class="live-dna-orb" style="width: 28px; height: 28px;">
+            <img src="images/dna-helix.jpg" alt="BioAge Pro" class="live-dna-thumb" />
+            <div class="live-dna-glow-ring"></div>
+          </div>
+          <div class="fp-brand-title">BioAge<span class="fp-brand-accent">Pro</span></div>
+        </div>
+        <div class="fp-subtitle">Account Recovery & Password Reset</div>
+      </header>
+
+      <!-- Stepper Indicator -->
+      <nav class="fp-stepper" aria-label="Password Reset Progress">
+        <div class="fp-step-item active" id="modal-step-ind-1">
+          <span class="fp-step-circle">1</span>
+          <span>Email</span>
+        </div>
+        <div class="fp-step-line" id="modal-step-line-1"></div>
+        <div class="fp-step-item" id="modal-step-ind-2">
+          <span class="fp-step-circle">2</span>
+          <span>OTP Code</span>
+        </div>
+        <div class="fp-step-line" id="modal-step-line-2"></div>
+        <div class="fp-step-item" id="modal-step-ind-3">
+          <span class="fp-step-circle">3</span>
+          <span>Password</span>
+        </div>
+      </nav>
+
+      <!-- Card Content / Panes -->
+      <main class="fp-content">
+
+        <!-- STEP 1: ENTER REGISTERED EMAIL -->
+        <section class="fp-pane active" id="modal-pane-email">
+          <h2 class="fp-pane-title">Find Your BioAge Account</h2>
+          <p class="fp-pane-desc">Enter your registered email address. We'll send a 6-digit One-Time Password (OTP) to verify your identity.</p>
+
+          <div class="fp-alert error" id="modal-alert-email-error" style="display: none;">
+            <i data-lucide="alert-circle"></i>
+            <span id="modal-alert-email-msg">Email not found in database.</span>
+          </div>
+
+          <form id="modal-form-send-otp" autocomplete="off">
+            <div class="form-group">
+              <label for="modal-fp-email-input">Registered Email Address</label>
+              <div class="input-with-icon">
+                <i data-lucide="mail"></i>
+                <input type="email" id="modal-fp-email-input" placeholder="name@domain.com" required autocomplete="email">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="modal-btn-send-otp">
+              <i data-lucide="send"></i>
+              <span>Send Verification OTP</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- STEP 2: ENTER OTP & 60-SEC COUNTDOWN -->
+        <section class="fp-pane" id="modal-pane-otp">
+          <h2 class="fp-pane-title">Enter Verification Code</h2>
+          <p class="fp-pane-desc">We've sent a 6-digit OTP code to <strong id="modal-fp-target-display" style="color: var(--accent-cyan); word-break: break-all;">user@email.com</strong>.</p>
+
+          <!-- Preview Notice if in Dev Mode / Console -->
+          <div class="fp-alert info" id="modal-alert-otp-preview" style="display: none;">
+            <i data-lucide="key"></i>
+            <span>Developer Preview Code: <strong id="modal-preview-code-value" style="font-family: var(--font-mono); font-size: 1.05rem; letter-spacing: 2px;"></strong> (also sent via SMTP/server console)</span>
+          </div>
+
+          <!-- Invalid OTP Error Banner -->
+          <div class="fp-alert error" id="modal-alert-otp-error" style="display: none;">
+            <i data-lucide="alert-octagon"></i>
+            <span id="modal-alert-otp-msg">Invalid OTP. Please check the code and try again.</span>
+          </div>
+
+          <form id="modal-form-verify-otp" autocomplete="off">
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label style="text-align: center; display: block;">6-Digit Security Code</label>
+              <div class="otp-boxes-wrapper" id="modal-otp-inputs-wrapper">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="modal-otp-1" autocomplete="one-time-code" required>
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="modal-otp-2">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="modal-otp-3">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="modal-otp-4">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="modal-otp-5">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-digit-input" id="modal-otp-6">
+              </div>
+            </div>
+
+            <!-- 60-Second Timer & Resend Row -->
+            <div class="fp-timer-resend-row">
+              <div class="fp-timer-box">
+                <i data-lucide="clock"></i>
+                <span id="modal-fp-timer-status">Resend OTP in <strong class="fp-timer-count" id="modal-fp-timer-seconds">60</strong>s</span>
+              </div>
+              <button type="button" class="btn-resend-otp" id="modal-btn-resend-otp" disabled>
+                <i data-lucide="rotate-cw"></i>
+                <span>Resend OTP</span>
+              </button>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="modal-btn-verify-otp">
+                <i data-lucide="check-circle-2"></i>
+                <span>Verify & Continue</span>
+              </button>
+            </div>
+
+            <div style="text-align: center; margin-top: 0.9rem;">
+              <button type="button" class="btn btn-ghost" id="modal-btn-back-to-email" style="font-size: 0.8rem; color: var(--text-muted);">
+                <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Change email address
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- STEP 3: CREATE NEW PASSWORD -->
+        <section class="fp-pane" id="modal-pane-password">
+          <h2 class="fp-pane-title">Create New Password</h2>
+          <p class="fp-pane-desc">Your OTP has been verified by the database! Please enter your new account password.</p>
+
+          <div class="fp-alert error" id="modal-alert-pass-error" style="display: none;">
+            <i data-lucide="alert-circle"></i>
+            <span id="modal-alert-pass-msg">Passwords do not match.</span>
+          </div>
+
+          <form id="modal-form-reset-password" autocomplete="off">
+            <div class="form-group">
+              <label for="modal-fp-new-password">New Password</label>
+              <div class="input-with-icon">
+                <i data-lucide="lock"></i>
+                <input type="password" id="modal-fp-new-password" class="has-toggle" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password">
+                <button type="button" class="btn-toggle-pass" data-target="modal-fp-new-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="modal-fp-confirm-password">Confirm New Password</label>
+              <div class="input-with-icon">
+                <i data-lucide="shield-check"></i>
+                <input type="password" id="modal-fp-confirm-password" class="has-toggle" placeholder="Re-enter your new password" required minlength="6" autocomplete="new-password">
+                <button type="button" class="btn-toggle-pass" data-target="modal-fp-confirm-password" title="Show/Hide Password" aria-label="Toggle password visibility">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" id="modal-btn-submit-reset">
+              <i data-lucide="key-round"></i>
+              <span>Update Password</span>
+            </button>
+          </form>
+        </section>
+
+        <!-- STEP 4: SUCCESS CONFIRMATION -->
+        <section class="fp-pane" id="modal-pane-success">
+          <div class="fp-success-wrap">
+            <div class="fp-success-icon">
+              <i data-lucide="check"></i>
+            </div>
+            <h2 class="fp-pane-title" style="font-size: 1.35rem; color: var(--accent-emerald);">Password Reset Complete!</h2>
+            <p class="fp-pane-desc" style="margin-top: 0.5rem; margin-bottom: 1.75rem;">
+              Your new password has been verified and updated in the database. You can now sign in with your new credentials.
+            </p>
+
+            <button type="button" class="btn btn-primary btn-block btn-lg" id="modal-btn-finish-signin">
+              <i data-lucide="log-in"></i>
+              <span>Sign In with New Password</span>
+            </button>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main ES6 Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
