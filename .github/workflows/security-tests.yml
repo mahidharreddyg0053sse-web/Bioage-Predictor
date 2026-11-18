@@ -113,58 +113,54 @@ jobs:
       - name: Prepare report directory
         run: mkdir -p reports/security
 
-      - name: Run Trivy Scan (Table Report)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          scanners: "vuln,config,secret"
-          skip-dirs: "tests"
-          format: "table"
-          output: "reports/security/trivy-report.txt"
-          severity: "CRITICAL,HIGH,MEDIUM"
-          ignore-unfixed: true
-          exit-code: "0"
+      - name: Install Trivy CLI
+        run: |
+          TRIVY_VERSION="0.58.2"
+          curl -sSfL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" \
+            -o /tmp/trivy.tar.gz
+          tar -xzf /tmp/trivy.tar.gz -C /tmp trivy
+          sudo mv /tmp/trivy /usr/local/bin/trivy
+          trivy --version
 
-      - name: Run Trivy Scan (JSON Report)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          scanners: "vuln,config,secret"
-          skip-dirs: "tests"
-          format: "json"
-          output: "reports/security/trivy-report.json"
-          severity: "CRITICAL,HIGH,MEDIUM"
-          ignore-unfixed: true
-          exit-code: "0"
+      - name: Run Trivy Filesystem & Dependency Scans (Table, JSON, SARIF)
+        run: |
+          trivy fs . \
+            --scanners vuln,config,secret \
+            --skip-dirs tests \
+            --severity CRITICAL,HIGH,MEDIUM \
+            --ignore-unfixed \
+            --format table \
+            --output reports/security/trivy-report.txt \
+            --exit-code 0
 
-      - name: Run Trivy Scan (SARIF Report)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          scanners: "vuln,config,secret"
-          skip-dirs: "tests"
-          format: "sarif"
-          output: "reports/security/trivy-results.sarif"
-          severity: "CRITICAL,HIGH"
-          ignore-unfixed: true
-          exit-code: "0"
+          trivy fs . \
+            --scanners vuln,config,secret \
+            --skip-dirs tests \
+            --severity CRITICAL,HIGH,MEDIUM \
+            --ignore-unfixed \
+            --format json \
+            --output reports/security/trivy-report.json \
+            --exit-code 0
 
-      - name: Display Trivy Summary
-        run: cat reports/security/trivy-report.txt
+          trivy fs . \
+            --scanners vuln,config,secret \
+            --skip-dirs tests \
+            --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            --format sarif \
+            --output reports/security/trivy-results.sarif \
+            --exit-code 0
+
+          cat reports/security/trivy-report.txt
 
       - name: Enforce Trivy Critical Fixable Vulnerability Gate
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          scanners: "vuln,config,secret"
-          skip-dirs: "tests"
-          severity: "CRITICAL"
-          ignore-unfixed: true
-          exit-code: "1"
+        run: |
+          trivy fs . \
+            --scanners vuln,config,secret \
+            --skip-dirs tests \
+            --severity CRITICAL \
+            --ignore-unfixed \
+            --exit-code 1
 
       - name: Upload Trivy Reports
         if: always()
@@ -179,13 +175,14 @@ jobs:
           if-no-files-found: warn
 
   owasp-security-tests:
-    name: OWASP Top 10 Security Control Tests (Pytest)
+    name: OWASP Top 10 Security Control Tests (225 Cases + Excel)
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     env:
       PORT: "3000"
       API_BASE_URL: "http://127.0.0.1:3000"
+      SECURITY_EXCEL_REPORT: "reports/security/BioAge_Pro_Security_Test_Results.xlsx"
 
     steps:
       - name: Checkout repository
@@ -221,7 +218,7 @@ jobs:
           echo $! > /tmp/bioage_sec_backend.pid
           for i in $(seq 1 30); do
             if curl -sf http://127.0.0.1:3000/api/health > /dev/null; then
-              echo "BioAge Pro API ready for OWASP security tests."
+              echo "BioAge Pro API ready for 225 OWASP security control tests."
               break
             fi
             if [ "$i" -eq 30 ]; then
@@ -231,7 +228,7 @@ jobs:
             sleep 1
           done
 
-      - name: Run Non-Destructive OWASP Security Verification Suite
+      - name: Run 225 Non-Destructive OWASP Security Verification Cases (+ Excel Export)
         run: |
           pytest tests/security/test_security_controls.py \
             --html=reports/security/owasp-security-report.html \
@@ -245,12 +242,13 @@ jobs:
             kill "$(cat /tmp/bioage_sec_backend.pid)" 2>/dev/null || true
           fi
 
-      - name: Upload OWASP Pytest Security Reports
+      - name: Upload OWASP Pytest & Excel Security Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: security-owasp-pytest-reports
           path: |
+            reports/security/BioAge_Pro_Security_Test_Results.xlsx
             reports/security/owasp-security-report.html
             reports/security/owasp-security-junit.xml
           retention-days: 14
@@ -294,7 +292,9 @@ jobs:
         run: npm ci
 
       - name: Prepare ZAP report directory
-        run: mkdir -p reports/security/zap
+        run: |
+          mkdir -p reports/security/zap
+          chmod -R 777 reports/security/zap
 
       - name: Start owned local BioAge Pro Express application
         if: steps.zap_target.outputs.local == 'true'
@@ -316,24 +316,20 @@ jobs:
             sleep 1
           done
 
-      - name: Run OWASP ZAP Baseline Scan (Safe, Non-Destructive)
+      - name: Run OWASP ZAP Baseline Scan (Docker Host Network, Non-Destructive)
         id: zap_scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: "${{ steps.zap_target.outputs.url }}"
-          rules_file_name: "tests/security/zap-rules.tsv"
-          cmd_options: "-a -I"
-          allow_issue_writing: false
-          fail_action: true
-
-      - name: Collect OWASP ZAP reports into reports/security/zap
-        if: always()
         run: |
-          for f in report_html.html report_md.md report_json.json report_xml.xml; do
-            if [ -f "$f" ]; then
-              cp "$f" "reports/security/zap/zap-$f"
-            fi
-          done
+          docker run --rm --network host \
+            -v "${{ github.workspace }}:/zap/wrk:rw" \
+            -t ghcr.io/zaproxy/zaproxy:stable \
+            zap-baseline.py \
+            -t "${{ steps.zap_target.outputs.url }}" \
+            -c tests/security/zap-rules.tsv \
+            -r reports/security/zap/zap-report.html \
+            -J reports/security/zap/zap-report.json \
+            -w reports/security/zap/zap-report.md \
+            -x reports/security/zap/zap-report.xml \
+            -I
 
       - name: Stop local Express server
         if: always()
@@ -373,8 +369,10 @@ jobs:
             echo "| Secret & Credential Detection | Gitleaks | \`${{ needs.gitleaks-secret-scan.result }}\` |"
             echo "| JavaScript Static Analysis (SAST) | JS SAST | \`${{ needs.javascript-sast-scan.result }}\` |"
             echo "| Dependency & Filesystem CVEs | Trivy | \`${{ needs.trivy-dependency-fs-scan.result }}\` |"
-            echo "| OWASP Top 10 App Controls | Pytest Security Suite | \`${{ needs.owasp-security-tests.result }}\` |"
+            echo "| OWASP Top 10 App Controls (225 Cases + Excel) | Pytest Security Suite | \`${{ needs.owasp-security-tests.result }}\` |"
             echo "| Web Application DAST (Baseline) | OWASP ZAP | \`${{ needs.owasp-zap-dast.result }}\` |"
+            echo ""
+            echo "- **Excel Workbook:** \`BioAge_Pro_Security_Test_Results.xlsx\` (inside \`security-owasp-pytest-reports\` artifact)"
           } >> "$GITHUB_STEP_SUMMARY"
 
           for result in \

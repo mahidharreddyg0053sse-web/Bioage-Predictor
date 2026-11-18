@@ -32,9 +32,14 @@ app.use((req, res, next) => {
     lowerUrl.startsWith('/node_modules') ||
     lowerUrl.startsWith('/android-app') ||
     lowerUrl.startsWith('/tests') ||
+    lowerUrl.startsWith('/reports') ||
     lowerUrl.includes('.env') ||
+    lowerUrl.includes('..') ||
+    lowerUrl.endsWith('.bat') ||
     lowerUrl === '/package.json' ||
-    lowerUrl === '/package-lock.json'
+    lowerUrl === '/package-lock.json' ||
+    lowerUrl === '/pytest.ini' ||
+    lowerUrl === '/.gitignore'
   ) {
     return res.status(403).json({ error: 'Access denied' });
   }
@@ -43,8 +48,16 @@ app.use((req, res, next) => {
 
 // Middlewares
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// Clean JSON parse error handler (prevents stack trace disclosure on malformed JSON)
+app.use((err, req, res, next) => {
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON payload' });
+  }
+  next(err);
+});
 
 // Request Logger
 app.use((req, res, next) => {
