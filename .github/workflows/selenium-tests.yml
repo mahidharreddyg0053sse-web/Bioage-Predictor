@@ -98,8 +98,10 @@ jobs:
           pytest tests/test_api.py \
             --junitxml=reports/selenium/backend-junit.xml
 
-      - name: Run Selenium Headless Chrome Test Suite
+      - name: Run Selenium Headless Chrome Test Suite (228 Test Cases + Excel Export)
         id: selenium_tests
+        env:
+          SELENIUM_EXCEL_REPORT: "reports/selenium/BioAge_Pro_Selenium_Test_Results.xlsx"
         run: |
           pytest tests/selenium \
             --html=reports/selenium/selenium-report.html \
@@ -127,7 +129,8 @@ jobs:
             SCREENSHOT_COUNT=$(find screenshots -maxdepth 1 -name '*.png' 2>/dev/null | wc -l)
             echo "- **Target URL:** \`${APP_BASE_URL}\`"
             echo "- **Failure Screenshots Captured:** ${SCREENSHOT_COUNT}"
-            echo "- **Reports Artifact:** \`selenium-test-reports\`"
+            echo "- **Excel Workbook:** \`BioAge_Pro_Selenium_Test_Results.xlsx\` (inside \`selenium-test-reports\` artifact)"
+            echo "- **Reports Artifact:** \`selenium-test-reports\` (contains Excel \`.xlsx\`, HTML, and JUnit XML)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Selenium Test Reports
