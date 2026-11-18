@@ -18,3 +18,7 @@ android-app/app/build/
 npm-debug.log*
 .DS_Store
 Thumbs.db
+reports/
+screenshots/
+__pycache__/
+*.pyc

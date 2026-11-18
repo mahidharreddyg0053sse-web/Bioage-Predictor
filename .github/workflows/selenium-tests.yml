@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       app_url:
-        description: "Optional external application URL (leave blank to test local PhishGuard stack)"
+        description: "Optional external application URL (leave blank to test local BioAge Pro stack)"
         required: false
         default: ""
 
@@ -33,99 +33,60 @@ jobs:
 
     env:
       PYTHONUNBUFFERED: "1"
+      PORT: "3000"
       SELENIUM_HEADLESS: "true"
       SELENIUM_TIMEOUT: "20"
-      APP_BASE_URL: ${{ github.event.inputs.app_url || 'http://127.0.0.1:5173' }}
-      API_BASE_URL: "http://127.0.0.1:8000"
-      RATE_LIMIT_REQUESTS_PER_MINUTE: "600"
-      # Optional backend secrets (app falls back safely to SQLite / honest unavailable status when omitted)
-      VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
-      URLHAUS_API_KEY: ${{ secrets.URLHAUS_API_KEY }}
-      ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      APP_BASE_URL: ${{ github.event.inputs.app_url || 'http://127.0.0.1:3000' }}
+      API_BASE_URL: "http://127.0.0.1:3000"
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: |
-            requirements.txt
-            backend/requirements.txt
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: tests/requirements.txt
 
       - name: Set up Google Chrome (Headless)
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
 
-      - name: Install Python dependencies
+      - name: Install Python test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Install Frontend dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Ensure ML model artifact exists
-        run: |
-          if [ ! -f backend/app/ml/artifacts/phishguard_rf_model.joblib ]; then
-            echo "Training Calibrated Random Forest model..."
-            cd backend && python app/ml/train_model.py
-          else
-            echo "Pre-trained ML model found."
-          fi
+          pip install -r tests/requirements.txt
 
       - name: Prepare report and screenshot directories
         run: mkdir -p reports/selenium screenshots
 
-      - name: Start PhishGuard Backend & Frontend servers
+      - name: Start BioAge Pro Server
         if: ${{ github.event.inputs.app_url == '' }}
         run: |
-          nohup bash -c 'cd backend && uvicorn app.main:app --host 127.0.0.1 --port 8000' \
-            > reports/selenium/backend.log 2>&1 &
-          echo $! > /tmp/phishguard_backend.pid
+          nohup node backend/server.js > reports/selenium/backend.log 2>&1 &
+          echo $! > /tmp/bioage_backend.pid
 
-          nohup bash -c 'cd frontend && npm run dev -- --host 127.0.0.1 --port 5173' \
-            > reports/selenium/frontend.log 2>&1 &
-          echo $! > /tmp/phishguard_frontend.pid
-
-          echo "Waiting for FastAPI backend on http://127.0.0.1:8000/api/health..."
-          for i in $(seq 1 45); do
-            if curl -sf http://127.0.0.1:8000/api/health > /dev/null; then
-              echo "Backend is online."
+          echo "Waiting for BioAge Pro server on http://127.0.0.1:3000/api/health..."
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:3000/api/health > /dev/null; then
+              echo "BioAge Pro server is online."
               break
             fi
-            if [ "$i" -eq 45 ]; then
-              echo "Backend failed to start within timeout:"
+            if [ "$i" -eq 30 ]; then
+              echo "Server failed to start within timeout:"
               cat reports/selenium/backend.log
-              exit 1
-            fi
-            sleep 1
-          done
-
-          echo "Waiting for Vite frontend on http://127.0.0.1:5173..."
-          for i in $(seq 1 45); do
-            if curl -sf http://127.0.0.1:5173 > /dev/null; then
-              echo "Frontend is online."
-              break
-            fi
-            if [ "$i" -eq 45 ]; then
-              echo "Frontend failed to start within timeout:"
-              cat reports/selenium/frontend.log
               exit 1
             fi
             sleep 1
@@ -134,7 +95,7 @@ jobs:
       - name: Run Backend API Smoke Tests
         id: backend_tests
         run: |
-          pytest backend/tests/test_api.py \
+          pytest tests/test_api.py \
             --junitxml=reports/selenium/backend-junit.xml
 
       - name: Run Selenium Headless Chrome Test Suite
@@ -145,20 +106,18 @@ jobs:
             --self-contained-html \
             --junitxml=reports/selenium/selenium-junit.xml
 
-      - name: Stop background servers
+      - name: Stop background server
         if: always()
         run: |
-          for pidfile in /tmp/phishguard_backend.pid /tmp/phishguard_frontend.pid; do
-            if [ -f "$pidfile" ]; then
-              kill "$(cat "$pidfile")" 2>/dev/null || true
-            fi
-          done
+          if [ -f /tmp/bioage_backend.pid ]; then
+            kill "$(cat /tmp/bioage_backend.pid)" 2>/dev/null || true
+          fi
 
       - name: Publish Selenium Test Summary
         if: always()
         run: |
           {
-            echo "## Selenium Automated Functional Testing Summary"
+            echo "## BioAge Pro Selenium Automated Functional Testing Summary"
             echo ""
             echo "| Stage | Status |"
             echo "| --- | :---: |"
@@ -168,7 +127,7 @@ jobs:
             SCREENSHOT_COUNT=$(find screenshots -maxdepth 1 -name '*.png' 2>/dev/null | wc -l)
             echo "- **Target URL:** \`${APP_BASE_URL}\`"
             echo "- **Failure Screenshots Captured:** ${SCREENSHOT_COUNT}"
-            echo "- **Reports Artifact:** \`selenium-test-reports\` (contains \`selenium-report.html\` and JUnit XML)"
+            echo "- **Reports Artifact:** \`selenium-test-reports\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Selenium Test Reports

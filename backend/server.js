@@ -12,6 +12,35 @@ const geminiRoutes = require('./routes/geminiRoutes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Security Hardening
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  next();
+});
+
+// Block direct static access to sensitive internal directories & config files
+app.use((req, res, next) => {
+  const lowerUrl = req.path.toLowerCase();
+  if (
+    lowerUrl.startsWith('/backend') ||
+    lowerUrl.startsWith('/.git') ||
+    lowerUrl.startsWith('/.github') ||
+    lowerUrl.startsWith('/node_modules') ||
+    lowerUrl.startsWith('/android-app') ||
+    lowerUrl.startsWith('/tests') ||
+    lowerUrl.includes('.env') ||
+    lowerUrl === '/package.json' ||
+    lowerUrl === '/package-lock.json'
+  ) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+  next();
+});
+
 // Middlewares
 app.use(cors());
 app.use(express.json());

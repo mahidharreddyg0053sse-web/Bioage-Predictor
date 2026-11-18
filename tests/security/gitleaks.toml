@@ -1,0 +1,12 @@
+title = "BioAge Pro Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist demo seed fixtures and test files"
+paths = [
+    '''backend/database/data/database\.json''',
+    '''tests/.*''',
+    '''package-lock\.json''',
+]
